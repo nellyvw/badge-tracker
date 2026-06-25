@@ -56,17 +56,15 @@ function avatarHtml(login, fullName, type, size = 'md') {
   const [sizeClass, textClass] = sizeMap[size] || sizeMap.md;
   const initials = getInitials(fullName);
   const color = avatarColor(type);
-  const photoUrl = login ? `https://badgephotos.corp.amazon.com/?uid=${login.trim()}` : '';
-  const fallbackDiv = `<div class="${sizeClass} rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-white ${textClass} font-bold flex-shrink-0">${initials}</div>`;
-  if (photoUrl) {
-    return `<div class="${sizeClass} rounded-full flex-shrink-0 overflow-hidden">
-      <img src="${photoUrl}" alt="${fullName}"
-        class="${sizeClass} rounded-full object-cover"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-      /><div class="${sizeClass} rounded-full bg-gradient-to-br ${color} items-center justify-center text-white ${textClass} font-bold" style="display:none">${initials}</div>
-    </div>`;
-  }
-  return fallbackDiv;
+  // Try local photo first, then corp badge photo, then initials
+  const localPhoto = `photos/${login}.jpg`;
+  const corpPhoto = `https://badgephotos.corp.amazon.com/?uid=${login.trim()}`;
+  return `<div class="${sizeClass} rounded-full flex-shrink-0 overflow-hidden">
+    <img src="${localPhoto}" alt="${fullName}"
+      class="${sizeClass} rounded-full object-cover"
+      onerror="this.src='${corpPhoto}';this.onerror=function(){this.style.display='none';this.nextElementSibling.style.display='flex'}"
+    /><div class="${sizeClass} rounded-full bg-gradient-to-br ${color} items-center justify-center text-white ${textClass} font-bold" style="display:none">${initials}</div>
+  </div>`;
 }
 function getStatus(expiryDate) {
   const today = new Date(); today.setHours(0,0,0,0);
@@ -410,17 +408,19 @@ function showBadgeByLogin(login) {
   const app = document.getElementById('app');
   app.innerHTML = renderBadgePage(assoc);
 
-  // Button bar (Back + QR)
-  const bar = document.createElement('div');
-  bar.className = 'fixed top-3 right-4 z-50 flex gap-2';
-  bar.innerHTML = `
-    <button onclick="generateQR('${assoc.login}','${assoc.full_name}')" class="bg-white border border-blue-300 text-blue-700 text-xs px-3 py-1.5 rounded-lg shadow hover:bg-blue-50 flex items-center gap-1">
-      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-      QR Code
-    </button>
-    <button onclick="window.location.hash=''" class="bg-white border border-gray-300 text-gray-700 text-xs px-3 py-1.5 rounded-lg shadow hover:bg-gray-50">← Back</button>
-  `;
-  app.appendChild(bar);
+  // Only show admin buttons if manager is logged in
+  if (isManagerLoggedIn()) {
+    const bar = document.createElement('div');
+    bar.className = 'fixed top-3 right-4 z-50 flex gap-2';
+    bar.innerHTML = `
+      <button onclick="generateQR('${assoc.login}','${assoc.full_name}')" class="bg-white border border-blue-300 text-blue-700 text-xs px-3 py-1.5 rounded-lg shadow hover:bg-blue-50 flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+        QR Code
+      </button>
+      <button onclick="window.location.hash=''" class="bg-white border border-gray-300 text-gray-700 text-xs px-3 py-1.5 rounded-lg shadow hover:bg-gray-50">← Back</button>
+    `;
+    app.appendChild(bar);
+  }
 }
 
 function generateQR(login, fullName) {
@@ -470,16 +470,68 @@ function showAdmin() {
   window.location.hash = '';
 }
 
+// ── Manager Authentication ────────────────────────────────────────────────────
+const MANAGER_PIN = '2468'; // Change this to your preferred PIN
+
+function isManagerLoggedIn() {
+  return sessionStorage.getItem('manager_auth') === 'true';
+}
+
+function showLoginScreen() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-lg max-w-sm w-full p-8 text-center">
+        <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Manager Access</h2>
+        <p class="text-sm text-gray-500 mb-6">Enter PIN to access the admin dashboard</p>
+        <input id="pin-input" type="password" maxlength="10" placeholder="Enter PIN"
+          class="w-full text-center text-2xl tracking-widest border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onkeydown="if(event.key==='Enter')attemptLogin()" autofocus />
+        <button onclick="attemptLogin()"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-sm">
+          Unlock
+        </button>
+        <p id="login-error" class="text-red-500 text-sm mt-3 hidden">Incorrect PIN</p>
+      </div>
+    </div>
+  `;
+}
+
+function attemptLogin() {
+  const pin = document.getElementById('pin-input').value;
+  if (pin === MANAGER_PIN) {
+    sessionStorage.setItem('manager_auth', 'true');
+    handleRoute();
+  } else {
+    const err = document.getElementById('login-error');
+    err.classList.remove('hidden');
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+    setTimeout(() => err.classList.add('hidden'), 2000);
+  }
+}
+
 function handleRoute() {
   const hash = window.location.hash.slice(1); // remove #
   const app = document.getElementById('app');
   if (hash.startsWith('badge/')) {
+    // Badge pages are public — no auth needed
     const login = hash.replace('badge/', '');
     showBadgeByLogin(login);
   } else {
-    app.innerHTML = renderAdminView();
-    document.getElementById('search-input').value = filterText;
-    renderTable();
+    // Admin page requires manager PIN
+    if (!isManagerLoggedIn()) {
+      showLoginScreen();
+    } else {
+      app.innerHTML = renderAdminView();
+      document.getElementById('search-input').value = filterText;
+      renderTable();
+    }
   }
 }
 
