@@ -14,6 +14,50 @@
     .tab-btn.active { background: #1e40af; color: white; }
     .tab-btn:not(.active) { background: white; color: #374151; }
     #assoc-tbody tr:hover { background: #f9fafb; cursor: pointer; }
+
+    /* Badge page styles */
+    .badge-page-bg { background: #f0f4ff; }
+    .gradient-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.5;
+      animation: float 8s ease-in-out infinite;
+    }
+    .blob-1 { width: 300px; height: 300px; background: #a5b4fc; top: -50px; left: -50px; }
+    .blob-2 { width: 250px; height: 250px; background: #c4b5fd; bottom: 30%; right: -60px; animation-delay: -3s; }
+    .blob-3 { width: 200px; height: 200px; background: #67e8f9; bottom: -30px; left: 30%; animation-delay: -5s; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(20px, -20px) scale(1.05); }
+      66% { transform: translate(-10px, 15px) scale(0.95); }
+    }
+
+    /* Scroll wheel effect */
+    .scroll-wheel {
+      max-height: 65vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+    .scroll-wheel::-webkit-scrollbar { display: none; }
+    .wheel-item {
+      transform: scale(0.95);
+      opacity: 0.6;
+      transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .wheel-item.wheel-active {
+      transform: scale(1.02);
+      opacity: 1;
+      box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+    }
+    .wheel-item.wheel-near {
+      transform: scale(0.98);
+      opacity: 0.85;
+    }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -138,67 +182,103 @@ function trainingCardHtml(t) {
 // ── Badge Page ────────────────────────────────────────────────────────────────
 function renderBadgePage(a) {
   const d = buildAssocData(a);
-  const annual  = d.trainings.filter(t => t.category === 'Annual');
-  const three   = d.trainings.filter(t => t.category === '3-Year');
+  const allTrainings = d.trainings;
   const overall = d.summary.expired > 0 ? 'expired' : d.summary.expiring_soon > 0 ? 'expiring_soon' : 'active';
-  const hdrBg   = { expired:'from-red-900 to-red-800', expiring_soon:'from-amber-800 to-amber-700', active:'from-gray-900 to-gray-800' }[overall];
-  const pill = (n, lbl, cls) => n > 0 ? `<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold border ${cls}"><span class="text-lg font-bold">${n}</span> ${lbl}</span>` : '';
+  const statusGlow = { expired: 'shadow-red-500/20', expiring_soon: 'shadow-amber-500/20', active: 'shadow-green-500/20' }[overall];
+  const statusRing = { expired: 'ring-red-400', expiring_soon: 'ring-amber-400', active: 'ring-green-400' }[overall];
   const typeBadge = d.employment_type === '3PTY'
-    ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full border bg-green-100 text-green-800 border-green-300">Casual</span>`
-    : `<span class="text-xs font-semibold px-2 py-0.5 rounded-full border bg-blue-100 text-blue-800 border-blue-300">Full-Time</span>`;
-  const alertHtml = d.summary.expired > 0
-    ? `<div class="mt-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-red-700 text-xs font-medium">⚠ ${d.summary.expired} certification${d.summary.expired>1?'s':''} expired — renewal required</div>`
-    : d.summary.expiring_soon > 0
-    ? `<div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-amber-700 text-xs font-medium">⚠ ${d.summary.expiring_soon} certification${d.summary.expiring_soon>1?'s':''} expiring within 30 days</div>` : '';
+    ? `<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700 border border-green-300">Casual</span>`
+    : `<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-300">Full-Time</span>`;
+  const pill = (n, lbl, cls) => n > 0 ? `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${cls}"><span class="text-base font-bold">${n}</span>${lbl}</span>` : '';
   const avatarEl = avatarHtml(d.login, d.full_name, d.employment_type, 'md');
-  return `<div class="min-h-screen bg-gray-100">
-    <div class="bg-gradient-to-r ${hdrBg} text-white px-4 py-3">
-      <div class="max-w-2xl mx-auto flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <div class="w-7 h-7 bg-blue-400 bg-opacity-30 rounded-lg flex items-center justify-center">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+
+  // Build training items for scroll wheel
+  const trainingItems = allTrainings.map((t, idx) => {
+    const statusColors = {
+      active: { bg: 'bg-white', border: 'border-green-200', icon: '✓', iconColor: 'text-green-600', label: 'Active' },
+      expiring_soon: { bg: 'bg-amber-50', border: 'border-amber-300', icon: '⚠', iconColor: 'text-amber-600', label: 'Expiring' },
+      expired: { bg: 'bg-red-50', border: 'border-red-300', icon: '✕', iconColor: 'text-red-600', label: 'Expired' },
+      not_trained: { bg: 'bg-gray-50', border: 'border-gray-200', icon: '—', iconColor: 'text-gray-400', label: 'Not Trained' }
+    };
+    const s = statusColors[t.status];
+    const expiryInfo = t.status === 'not_trained' ? 'No record on file'
+      : t.days < 0 ? `${Math.abs(t.days)} days overdue`
+      : t.days === 0 ? 'Expires today'
+      : `${t.days} days remaining`;
+    const categoryTag = t.category === 'Annual' ? '1Y' : '3Y';
+    return `<div class="wheel-item ${s.bg} border ${s.border} rounded-2xl p-5 shadow-sm transition-all duration-300" data-index="${idx}">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          <span class="${s.iconColor} text-xl">${s.icon}</span>
+          <div class="min-w-0">
+            <h3 class="font-semibold text-gray-900 text-lg truncate">${t.name}</h3>
+            <p class="text-sm text-gray-500 mt-0.5">${expiryInfo}</p>
           </div>
-          <span class="font-bold text-sm tracking-wide">Amazon Training Tracker</span>
         </div>
-        <span class="text-xs text-gray-300">Certification Status</span>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="text-xs font-mono text-gray-500 bg-white/5 px-2 py-0.5 rounded">${categoryTag}</span>
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${s.bg} ${s.iconColor} border ${s.border}">${s.label}</span>
+        </div>
       </div>
+      ${t.status !== 'not_trained' ? `<div class="mt-2.5 flex justify-between text-sm text-gray-500">
+        <span>Completed: ${fmtDate(t.completed)}</span>
+        <span>Expires: ${fmtDate(t.expiry)}</span>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  return `<div class="min-h-screen badge-page-bg relative overflow-hidden">
+    <!-- Animated gradient background -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="gradient-blob blob-1"></div>
+      <div class="gradient-blob blob-2"></div>
+      <div class="gradient-blob blob-3"></div>
     </div>
-    <div class="max-w-2xl mx-auto px-4 py-5">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-5">
-        <div class="flex items-center space-x-4">
-          ${avatarEl}
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap mb-0.5">
-              <h1 class="text-xl font-bold text-gray-900">${d.full_name}</h1>
-              ${typeBadge}
-            </div>
-            <p class="text-gray-500 text-sm font-mono">${d.login}</p>
-            ${d.manager_name ? `<p class="text-gray-500 text-sm">Manager: ${d.manager_name}</p>` : ''}
-            ${d.start_date ? `<p class="text-gray-500 text-sm">Started: ${fmtStart(d.start_date)}</p>` : ''}
+
+    <div class="relative z-10 max-w-lg mx-auto px-4 py-6">
+      <!-- Header -->
+      <div class="text-center mb-2">
+        <p class="text-xs text-gray-500 uppercase tracking-widest">Certification Status</p>
+      </div>
+
+      <!-- Profile Card -->
+      <div class="bg-white/80 backdrop-blur-xl border border-white/60 rounded-3xl p-6 mb-6 shadow-xl ${statusGlow}">
+        <div class="flex flex-col items-center text-center">
+          <div class="ring-2 ${statusRing} ring-offset-2 ring-offset-transparent rounded-full mb-3">
+            ${avatarEl}
+          </div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-1">${d.full_name}</h1>
+          <p class="text-gray-500 text-base font-mono mb-2">${d.login}</p>
+          <div class="flex items-center gap-2 mb-2">
+            ${typeBadge}
+            ${d.manager_name ? `<span class="text-sm text-gray-500">· ${d.manager_name}</span>` : ''}
+          </div>
+          ${d.start_date ? `<p class="text-sm text-gray-500 mb-3">Started: ${fmtStart(d.start_date)}</p>` : ''}
+          <div class="flex flex-wrap justify-center gap-2">
+            ${pill(d.summary.active,'Active','bg-green-100 text-green-700 border border-green-300')}
+            ${pill(d.summary.expiring_soon,'Expiring','bg-amber-100 text-amber-700 border border-amber-300')}
+            ${pill(d.summary.expired,'Expired','bg-red-100 text-red-700 border border-red-300')}
+            ${pill(d.summary.not_trained,'Untrained','bg-gray-100 text-gray-500 border border-gray-300')}
           </div>
         </div>
-        <div class="mt-4 flex flex-wrap gap-2">
-          ${pill(d.summary.active,'Active','bg-green-100 text-green-800 border-green-300')}
-          ${pill(d.summary.expiring_soon,'Expiring','bg-amber-100 text-amber-800 border-amber-300')}
-          ${pill(d.summary.expired,'Expired','bg-red-100 text-red-800 border-red-300')}
-          ${pill(d.summary.not_trained,'Not Trained','bg-gray-100 text-gray-500 border-gray-300')}
+      </div>
+
+      <!-- Training Scroll Wheel -->
+      <div class="relative">
+        <div class="text-center mb-3">
+          <h2 class="text-sm font-semibold text-gray-600 uppercase tracking-wider">Training Certifications</h2>
         </div>
-        ${alertHtml}
+        <div id="scroll-wheel" class="scroll-wheel space-y-2 pb-20">
+          ${trainingItems}
+        </div>
+        <!-- Fade overlays -->
+        <div class="pointer-events-none absolute top-8 left-0 right-0 h-8 bg-gradient-to-b from-[#f0f4ff] to-transparent z-20"></div>
+        <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f0f4ff] to-transparent z-20"></div>
       </div>
-      <div class="mb-5">
-        <div class="flex items-center gap-2 mb-3"><div class="w-1 h-5 bg-blue-500 rounded-full"></div>
-          <h2 class="font-bold text-gray-700 text-sm uppercase tracking-wider">Annual Certifications</h2>
-          <span class="text-xs text-gray-400">(renew yearly)</span></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">${annual.map(trainingCardHtml).join('')}</div>
-      </div>
-      <div class="mb-5">
-        <div class="flex items-center gap-2 mb-3"><div class="w-1 h-5 bg-purple-500 rounded-full"></div>
-          <h2 class="font-bold text-gray-700 text-sm uppercase tracking-wider">3-Year Certifications</h2>
-          <span class="text-xs text-gray-400">(renew every 3 years)</span></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">${three.map(trainingCardHtml).join('')}</div>
-      </div>
-      <p class="text-center text-xs text-gray-400 pb-4">Amazon Training Tracker · Preview Mode</p>
-    </div></div>`;
+
+      <p class="text-center text-[10px] text-gray-400 pt-4 pb-6 relative z-30">Amazon Training Tracker</p>
+    </div>
+  </div>`;
 }
 
 
@@ -408,19 +488,60 @@ function showBadgeByLogin(login) {
   const app = document.getElementById('app');
   app.innerHTML = renderBadgePage(assoc);
 
+  // Initialize scroll wheel effect
+  setTimeout(initScrollWheel, 100);
+
   // Only show admin buttons if manager is logged in
   if (isManagerLoggedIn()) {
     const bar = document.createElement('div');
     bar.className = 'fixed top-3 right-4 z-50 flex gap-2';
     bar.innerHTML = `
-      <button onclick="generateQR('${assoc.login}','${assoc.full_name}')" class="bg-white border border-blue-300 text-blue-700 text-xs px-3 py-1.5 rounded-lg shadow hover:bg-blue-50 flex items-center gap-1">
+      <button onclick="generateQR('${assoc.login}','${assoc.full_name}')" class="bg-white/10 backdrop-blur border border-white/20 text-white text-xs px-3 py-1.5 rounded-lg shadow hover:bg-white/20 flex items-center gap-1">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-        QR Code
+        QR
       </button>
-      <button onclick="window.location.hash=''" class="bg-white border border-gray-300 text-gray-700 text-xs px-3 py-1.5 rounded-lg shadow hover:bg-gray-50">← Back</button>
+      <button onclick="window.location.hash=''" class="bg-white/10 backdrop-blur border border-white/20 text-white text-xs px-3 py-1.5 rounded-lg shadow hover:bg-white/20">← Back</button>
     `;
     app.appendChild(bar);
   }
+}
+
+function initScrollWheel() {
+  const wheel = document.getElementById('scroll-wheel');
+  if (!wheel) return;
+  const items = wheel.querySelectorAll('.wheel-item');
+  let mouseY = window.innerHeight / 2; // Default to center
+  
+  function updateWheel() {
+    items.forEach(item => {
+      const itemRect = item.getBoundingClientRect();
+      const itemCenter = itemRect.top + itemRect.height / 2;
+      const distance = Math.abs(mouseY - itemCenter);
+      
+      item.classList.remove('wheel-active', 'wheel-near');
+      
+      if (distance < 50) {
+        item.classList.add('wheel-active');
+      } else if (distance < 140) {
+        item.classList.add('wheel-near');
+      }
+    });
+  }
+  
+  // Follow mouse position
+  document.addEventListener('mousemove', (e) => {
+    mouseY = e.clientY;
+    updateWheel();
+  });
+  
+  // Also follow touch on mobile
+  document.addEventListener('touchmove', (e) => {
+    mouseY = e.touches[0].clientY;
+    updateWheel();
+  });
+  
+  wheel.addEventListener('scroll', updateWheel);
+  updateWheel();
 }
 
 function generateQR(login, fullName) {
