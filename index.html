@@ -496,11 +496,11 @@ function showBadgeByLogin(login) {
     const bar = document.createElement('div');
     bar.className = 'fixed top-3 right-4 z-50 flex gap-2';
     bar.innerHTML = `
-      <button onclick="generateQR('${assoc.login}','${assoc.full_name}')" class="bg-white/10 backdrop-blur border border-white/20 text-white text-xs px-3 py-1.5 rounded-lg shadow hover:bg-white/20 flex items-center gap-1">
+      <button onclick="generateQR('${assoc.login}','${assoc.full_name}')" class="bg-blue-600 border border-blue-700 text-white text-xs px-3 py-1.5 rounded-lg shadow-md hover:bg-blue-700 flex items-center gap-1">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
         QR
       </button>
-      <button onclick="window.location.hash=''" class="bg-white/10 backdrop-blur border border-white/20 text-white text-xs px-3 py-1.5 rounded-lg shadow hover:bg-white/20">← Back</button>
+      <button onclick="window.location.hash=''" class="bg-gray-700 border border-gray-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-md hover:bg-gray-800">← Back</button>
     `;
     app.appendChild(bar);
   }
