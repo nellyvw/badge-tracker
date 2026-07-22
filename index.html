@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html lang="en"><script src="index_files/sentryjs-api-injected.js" id="sentryjs-api-injected"></script><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
   <title>Amazon Training Tracker – Preview</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script></script>
+  <script src="index_files/3.4.17"></script>
+  <script src="index_files/qrcode.min.js"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     .card-hover { transition: box-shadow 0.15s, transform 0.15s; }
@@ -14,10 +17,408 @@
     .tab-btn.active { background: #1e40af; color: white; }
     .tab-btn:not(.active) { background: white; color: #374151; }
     #assoc-tbody tr:hover { background: #f9fafb; cursor: pointer; }
+
+    /* Badge page styles */
+    .badge-page-bg { background: linear-gradient(135deg, #e0e7ff 0%, #f0f4ff 40%, #ede9fe 100%); }
+    .gradient-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.5;
+      animation: float 8s ease-in-out infinite;
+    }
+    .blob-1 { width: 300px; height: 300px; background: #a5b4fc; top: -50px; left: -50px; }
+    .blob-2 { width: 250px; height: 250px; background: #c4b5fd; bottom: 30%; right: -60px; animation-delay: -3s; }
+    .blob-3 { width: 200px; height: 200px; background: #67e8f9; bottom: -30px; left: 30%; animation-delay: -5s; }
+    .blob-4 { width: 180px; height: 180px; background: #fbbf24; top: 40%; left: -40px; animation-delay: -6s; opacity: 0.25; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(20px, -20px) scale(1.05); }
+      66% { transform: translate(-10px, 15px) scale(0.95); }
+    }
+
+    /* Scroll wheel effect */
+    .scroll-wheel {
+      max-height: 65vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+    .scroll-wheel::-webkit-scrollbar { display: none; }
+    .wheel-item {
+      transform: scale(0.95);
+      opacity: 0.6;
+      transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .wheel-item.wheel-active {
+      transform: scale(1.02);
+      opacity: 1;
+      box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+    }
+    .wheel-item.wheel-near {
+      transform: scale(0.98);
+      opacity: 0.85;
+    }
+
+    /* Animated pulse for expired cards */
+    .expired-pulse {
+      animation: pulse-red 1.5s ease-in-out infinite;
+      border-width: 2px;
+    }
+    @keyframes pulse-red {
+      0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5), 0 0 15px rgba(239, 68, 68, 0.3);
+        background-color: rgba(254, 226, 226, 1);
+      }
+      50% { 
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0), 0 0 25px rgba(239, 68, 68, 0.5);
+        background-color: rgba(254, 202, 202, 1);
+      }
+    }
+
+    /* Shimmer effect for active cards */
+    .active-shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+    .active-shimmer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 200%; }
+    }
+
+
+
+    /* Profile card entrance animation */
+    .profile-enter {
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Staggered animation for training items */
+    .wheel-item { animation: fadeInUp 0.4s ease forwards; opacity: 0; }
+    .wheel-item:nth-child(1) { animation-delay: 0.1s; }
+    .wheel-item:nth-child(2) { animation-delay: 0.15s; }
+    .wheel-item:nth-child(3) { animation-delay: 0.2s; }
+    .wheel-item:nth-child(4) { animation-delay: 0.25s; }
+    .wheel-item:nth-child(5) { animation-delay: 0.3s; }
+    .wheel-item:nth-child(6) { animation-delay: 0.35s; }
+    .wheel-item:nth-child(7) { animation-delay: 0.4s; }
+    .wheel-item:nth-child(8) { animation-delay: 0.45s; }
+    .wheel-item:nth-child(9) { animation-delay: 0.5s; }
+    .wheel-item:nth-child(10) { animation-delay: 0.55s; }
+    .wheel-item:nth-child(n+11) { animation-delay: 0.6s; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(15px) scale(0.95); }
+      to { opacity: 0.6; transform: translateY(0) scale(0.95); }
+    }
+
+    /* Smooth hover on training items */
+    .wheel-item:hover {
+      border-color: #6366f1 !important;
+      transform: scale(1.01);
+      opacity: 0.95;
+    }
+
+    /* Status glow animation on profile ring */
+    .ring-glow-green { animation: glowGreen 2s ease-in-out infinite alternate; }
+    .ring-glow-red { animation: glowRed 1.5s ease-in-out infinite alternate; }
+    .ring-glow-amber { animation: glowAmber 2s ease-in-out infinite alternate; }
+    @keyframes glowGreen {
+      from { box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); }
+      to { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); }
+    }
+    @keyframes glowRed {
+      from { box-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+      to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
+    }
+    @keyframes glowAmber {
+      from { box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
+      to { box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+    }
+
+    /* Admin table row animation */
+    #assoc-tbody tr {
+      transition: all 0.2s ease;
+    }
+    #assoc-tbody tr:hover {
+      background: #f0f9ff !important;
+      transform: scale(1.005);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    /* Stats card hover effect */
+    .stat-card {
+      transition: all 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    /* Dark mode */
+    body.dark { background: #0f172a !important; color: #e2e8f0; }
+    body.dark .min-h-screen { background: #0f172a !important; }
+    body.dark .bg-gray-50 { background: #1e293b !important; }
+    body.dark .bg-white { background: #1e293b !important; }
+    body.dark .bg-gray-100 { background: #0f172a !important; }
+    body.dark .bg-gray-900 { background: #020617 !important; }
+    body.dark .text-gray-900 { color: #f8fafc !important; }
+    body.dark .text-gray-700 { color: #cbd5e1 !important; }
+    body.dark .text-gray-600 { color: #94a3b8 !important; }
+    body.dark .text-gray-500 { color: #64748b !important; }
+    body.dark .text-gray-400 { color: #64748b !important; }
+    body.dark .font-semibold.text-gray-900 { color: #f1f5f9 !important; }
+    body.dark .border-gray-200, body.dark .border-gray-300, body.dark .border-gray-100 { border-color: #334155 !important; }
+    body.dark table { background: #1e293b; }
+    body.dark thead { background: #0f172a !important; }
+    body.dark thead th { color: #94a3b8 !important; }
+    body.dark #assoc-tbody tr { border-color: #334155; }
+    body.dark #assoc-tbody tr:hover { background: #334155 !important; }
+    body.dark input, body.dark select { background: #1e293b !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+    body.dark input::placeholder { color: #64748b !important; }
+    body.dark .stat-card { border-color: #334155 !important; }
+    body.dark .bg-red-50 { background: #1c1917 !important; }
+    body.dark .bg-amber-50 { background: #1c1917 !important; }
+    body.dark .bg-green-50 { background: #0f1f17 !important; }
+    body.dark .bg-blue-50 { background: #0f172a !important; }
+    body.dark .bg-gray-50.stat-card, body.dark .stat-card.bg-gray-50 { background: #1e293b !important; }
+    body.dark .text-red-700 { color: #fca5a5 !important; }
+    body.dark .text-amber-700 { color: #fcd34d !important; }
+    body.dark .text-green-700 { color: #86efac !important; }
+    body.dark .text-blue-700 { color: #93c5fd !important; }
+    body.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+    body.dark .rounded-xl.border { border-color: #334155 !important; }
+    body.dark .bg-blue-50.text-blue-700 { background: #1e3a5f !important; color: #93c5fd !important; border-color: #2563eb !important; }
+    body.dark .bg-red-50.text-red-700 { background: #3b1111 !important; color: #fca5a5 !important; border-color: #dc2626 !important; }
+    body.dark .bg-amber-50.text-amber-700 { background: #3b2e11 !important; color: #fcd34d !important; border-color: #d97706 !important; }
+    body.dark .bg-green-100 { background: #14532d !important; }
+    body.dark .text-green-800 { color: #86efac !important; }
+    body.dark .border-green-300 { border-color: #16a34a !important; }
+    body.dark .bg-blue-100 { background: #1e3a5f !important; }
+    body.dark .text-blue-800 { color: #93c5fd !important; }
+    body.dark .border-blue-300 { border-color: #2563eb !important; }
+    body.dark .bg-red-100 { background: #3b1111 !important; }
+    body.dark .text-red-800 { color: #fca5a5 !important; }
+    body.dark .border-red-300 { border-color: #dc2626 !important; }
+    body.dark .bg-amber-100 { background: #3b2e11 !important; }
+    body.dark .text-amber-800 { color: #fcd34d !important; }
+    body.dark .border-amber-300 { border-color: #d97706 !important; }
+    body.dark .border-t { border-color: #334155 !important; }
+    body.dark .border-b { border-color: #334155 !important; }
+    body.dark #table-footer { color: #64748b !important; }
+
+    /* Dark mode - Badge/Profile page */
+    body.dark .badge-page-bg { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #1e293b 100%) !important; }
+    body.dark .gradient-blob.blob-1 { background: #312e81; opacity: 0.3; }
+    body.dark .gradient-blob.blob-2 { background: #4c1d95; opacity: 0.25; }
+    body.dark .gradient-blob.blob-3 { background: #164e63; opacity: 0.3; }
+    body.dark .gradient-blob.blob-4 { background: #78350f; opacity: 0.15; }
+
+    /* Profile card */
+    body.dark .profile-enter { background: rgba(30, 41, 59, 0.85) !important; border-color: rgba(71, 85, 105, 0.5) !important; }
+    body.dark .profile-enter h1 { color: #f1f5f9 !important; }
+    body.dark .profile-enter p { color: #94a3b8 !important; }
+    body.dark .profile-enter .text-gray-900 { color: #f1f5f9 !important; }
+    body.dark .profile-enter .text-gray-500 { color: #94a3b8 !important; }
+    body.dark .profile-enter .ring-offset-transparent { ring-offset-color: transparent; }
+
+    /* Training scroll wheel items */
+    body.dark .wheel-item { background: #1e293b !important; border-color: #475569 !important; }
+    body.dark .wheel-item h3 { color: #f1f5f9 !important; }
+    body.dark .wheel-item p { color: #94a3b8 !important; }
+    body.dark .wheel-item .text-gray-900 { color: #f1f5f9 !important; }
+    body.dark .wheel-item .text-gray-500 { color: #94a3b8 !important; }
+    body.dark .wheel-item .text-sm.text-gray-500 { color: #94a3b8 !important; }
+    body.dark .wheel-item .text-xs.font-mono { background: rgba(255,255,255,0.05); color: #94a3b8 !important; }
+
+    /* Training item status backgrounds in dark mode */
+    body.dark .wheel-item.bg-green-50 { background: rgba(20, 83, 45, 0.3) !important; border-color: #16a34a !important; }
+    body.dark .wheel-item.bg-amber-50 { background: rgba(120, 53, 15, 0.3) !important; border-color: #d97706 !important; }
+    body.dark .wheel-item.bg-red-50 { background: rgba(127, 29, 29, 0.3) !important; border-color: #dc2626 !important; }
+    body.dark .wheel-item.bg-gray-50 { background: rgba(30, 41, 59, 0.6) !important; border-color: #475569 !important; }
+
+    /* Process training tab in dark mode */
+    body.dark #badge-content-processes .bg-white\/80 { background: rgba(30, 41, 59, 0.85) !important; border-color: rgba(71, 85, 105, 0.5) !important; }
+    body.dark #badge-content-processes h3 { color: #94a3b8 !important; }
+    body.dark #badge-content-processes .bg-green-100 { background: rgba(20, 83, 45, 0.3) !important; color: #4ade80 !important; border-color: #16a34a !important; }
+    body.dark #badge-content-processes .text-green-500 { color: #4ade80 !important; }
+    body.dark #badge-content-processes .text-gray-400 { color: #64748b !important; }
+    body.dark #badge-content-processes .text-gray-600 { color: #94a3b8 !important; }
+    body.dark #badge-tab-certs, body.dark #badge-tab-processes { border-color: rgba(71, 85, 105, 0.5) !important; }
+    body.dark #badge-tab-certs.bg-white\/40, body.dark #badge-tab-processes.bg-white\/40 { background: rgba(30, 41, 59, 0.4) !important; color: #64748b !important; }
+
+    /* Status icon colors in dark mode */
+    body.dark .wheel-item .text-green-600 { color: #4ade80 !important; }
+    body.dark .wheel-item .text-amber-600 { color: #fbbf24 !important; }
+    body.dark .wheel-item .text-red-600 { color: #f87171 !important; }
+    body.dark .wheel-item .text-gray-400 { color: #64748b !important; }
+
+    /* Expired pulse animation in dark mode */
+    body.dark .expired-pulse {
+      animation: pulse-red-dark 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-red-dark {
+      0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4), 0 0 15px rgba(239, 68, 68, 0.2);
+        background-color: rgba(127, 29, 29, 0.3);
+      }
+      50% { 
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0), 0 0 25px rgba(239, 68, 68, 0.4);
+        background-color: rgba(127, 29, 29, 0.5);
+      }
+    }
+
+    /* Active shimmer in dark mode */
+    body.dark .active-shimmer::after {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    }
+
+    /* Fade overlays on scroll wheel */
+    body.dark #fade-top { background: linear-gradient(to bottom, #0f172a, transparent) !important; }
+    body.dark #fade-bottom { background: linear-gradient(to top, #0f172a, transparent) !important; }
+
+    /* Profile page header and footer text */
+    body.dark .badge-page-bg .text-xs.text-gray-500.uppercase { color: #64748b !important; }
+    body.dark .badge-page-bg .text-xs.text-gray-400 { color: #475569 !important; }
+
+    /* Pills on profile card */
+    body.dark .profile-enter .bg-green-100 { background: rgba(20, 83, 45, 0.4) !important; border-color: #16a34a !important; }
+    body.dark .profile-enter .text-green-700 { color: #4ade80 !important; }
+    body.dark .profile-enter .bg-amber-100 { background: rgba(120, 53, 15, 0.4) !important; border-color: #d97706 !important; }
+    body.dark .profile-enter .text-amber-700 { color: #fbbf24 !important; }
+    body.dark .profile-enter .bg-red-100 { background: rgba(127, 29, 29, 0.4) !important; border-color: #dc2626 !important; }
+    body.dark .profile-enter .text-red-700 { color: #f87171 !important; }
+    body.dark .profile-enter .bg-gray-100 { background: rgba(51, 65, 85, 0.5) !important; border-color: #475569 !important; }
+    body.dark .profile-enter .bg-blue-100 { background: rgba(30, 58, 95, 0.5) !important; border-color: #2563eb !important; }
+    body.dark .profile-enter .text-blue-700 { color: #93c5fd !important; }
+
+    /* Wheel item hover in dark mode */
+    body.dark .wheel-item:hover { border-color: #818cf8 !important; }
+
+    /* Back button / navigation on profile */
+    body.dark .badge-page-bg button { color: #e2e8f0 !important; }
+    body.dark .badge-page-bg a { color: #e2e8f0 !important; }
+
+    /* QR Modal in dark mode */
+    body.dark .fixed.bg-black .bg-white { background: #1e293b !important; }
+    body.dark .fixed.bg-black .text-gray-900 { color: #f1f5f9 !important; }
+    body.dark .fixed.bg-black .text-gray-500 { color: #94a3b8 !important; }
+    body.dark .fixed.bg-black .text-gray-400 { color: #64748b !important; }
+    body.dark .fixed.bg-black .text-gray-700 { color: #cbd5e1 !important; }
+    body.dark .fixed.bg-black .border-gray-300 { border-color: #475569 !important; }
+
+    /* Profile page "Certification Status" text */
+    body.dark .badge-page-bg .text-sm.font-semibold.text-gray-600 { color: #94a3b8 !important; }
+
+    /* Training card items in expandable rows */
+    body.dark .card-hover { background: #1e293b !important; border-color: #475569 !important; }
+    body.dark .card-hover .text-gray-800 { color: #e2e8f0 !important; }
+    body.dark .card-hover .text-gray-500 { color: #94a3b8 !important; }
+    body.dark .card-hover .text-red-600 { color: #f87171 !important; }
+
+    /* Mobile filter toggle button in dark mode */
+    body.dark #filter-toggle-btn { background: #334155 !important; border-color: #475569 !important; color: #e2e8f0 !important; }
+    body.dark #expand-all-btn { background: #4f46e5 !important; border-color: #6366f1 !important; color: #ffffff !important; }
+    body.dark #expand-all-container button:not(#expand-all-btn) { background: #334155 !important; border-color: #475569 !important; color: #e2e8f0 !important; }
+    body.dark input[type="checkbox"] { background: #334155 !important; border-color: #64748b !important; }
+
+    /* Badge page certification section headings in dark mode */
+    body.dark .bg-gray-200 { background: #334155 !important; }
+    body.dark .border-gray-300 { border-color: #475569 !important; }
+    body.dark .bg-gray-200.text-gray-700 { color: #e2e8f0 !important; }
+
+    /* Badge page tab buttons in dark mode */
+    body.dark #badge-tab-certs, body.dark #badge-tab-processes {
+      background: rgba(30, 41, 59, 0.8) !important;
+      color: #94a3b8 !important;
+      border-color: #475569 !important;
+    }
+    body.dark #badge-tab-certs.bg-white\/80, body.dark #badge-tab-processes.bg-white\/80 {
+      background: rgba(79, 70, 229, 0.3) !important;
+      color: #a5b4fc !important;
+      border-color: #6366f1 !important;
+    }
+
+    /* Wheel item dates text in dark mode */
+    body.dark .wheel-item .text-sm.text-gray-500 span { color: #cbd5e1 !important; }
+    body.dark .wheel-item .text-sm.text-gray-500 div { color: #94a3b8 !important; }
+    body.dark .wheel-item .font-medium { color: #cbd5e1 !important; }
+    body.dark .wheel-item .font-semibold { color: #e2e8f0 !important; }
+
+    /* Process training category boxes in dark mode */
+    body.dark #badge-content-processes .bg-blue-50 { background: rgba(30, 58, 95, 0.4) !important; border-color: #2563eb !important; }
+    body.dark #badge-content-processes .bg-teal-50 { background: rgba(19, 78, 74, 0.4) !important; border-color: #0d9488 !important; }
+    body.dark #badge-content-processes .bg-orange-50 { background: rgba(124, 45, 18, 0.3) !important; border-color: #ea580c !important; }
+    body.dark #badge-content-processes .bg-violet-50 { background: rgba(76, 29, 149, 0.3) !important; border-color: #7c3aed !important; }
+    body.dark #badge-content-processes .border-blue-200 { border-color: #2563eb !important; }
+    body.dark #badge-content-processes .border-teal-200 { border-color: #0d9488 !important; }
+    body.dark #badge-content-processes .border-orange-200 { border-color: #ea580c !important; }
+    body.dark #badge-content-processes .border-violet-200 { border-color: #7c3aed !important; }
+
+    /* Process training category header pills in dark mode */
+    body.dark #badge-content-processes .bg-blue-100.text-blue-800 { background: rgba(37, 99, 235, 0.3) !important; color: #93c5fd !important; }
+    body.dark #badge-content-processes .bg-teal-100.text-teal-800 { background: rgba(13, 148, 136, 0.3) !important; color: #5eead4 !important; }
+    body.dark #badge-content-processes .bg-orange-100.text-orange-800 { background: rgba(234, 88, 12, 0.3) !important; color: #fdba74 !important; }
+    body.dark #badge-content-processes .bg-violet-100.text-violet-800 { background: rgba(124, 58, 237, 0.3) !important; color: #c4b5fd !important; }
+
+    /* Process training chips in dark mode */
+    body.dark #badge-content-processes .bg-blue-100.text-blue-700 { background: rgba(37, 99, 235, 0.2) !important; color: #93c5fd !important; border-color: #3b82f6 !important; }
+    body.dark #badge-content-processes .bg-teal-100.text-teal-700 { background: rgba(13, 148, 136, 0.2) !important; color: #5eead4 !important; border-color: #14b8a6 !important; }
+    body.dark #badge-content-processes .bg-orange-100.text-orange-700 { background: rgba(234, 88, 12, 0.2) !important; color: #fdba74 !important; border-color: #f97316 !important; }
+    body.dark #badge-content-processes .bg-violet-100.text-violet-700 { background: rgba(124, 58, 237, 0.2) !important; color: #c4b5fd !important; border-color: #8b5cf6 !important; }
+    body.dark #badge-content-processes .border-blue-300 { border-color: #3b82f6 !important; }
+    body.dark #badge-content-processes .border-teal-300 { border-color: #14b8a6 !important; }
+    body.dark #badge-content-processes .border-orange-300 { border-color: #f97316 !important; }
+    body.dark #badge-content-processes .border-violet-300 { border-color: #8b5cf6 !important; }
+
+    /* Untrained process chips in dark mode */
+    body.dark #badge-content-processes .bg-gray-100.text-gray-400 { background: rgba(51, 65, 85, 0.4) !important; color: #64748b !important; border-color: #475569 !important; }
+    body.dark #badge-content-processes .border-gray-200 { border-color: #475569 !important; }
+
+    /* Filter buttons in dark mode */
+    body.dark .bg-white.text-green-700 { background: #1e293b !important; }
+    body.dark .bg-white.text-blue-700 { background: #1e293b !important; }
+    body.dark .bg-white.text-red-700 { background: #1e293b !important; }
+    body.dark .bg-white.text-amber-700 { background: #1e293b !important; }
+
+    /* Stat cards text in dark mode */
+    body.dark .stat-card .text-3xl { color: #f1f5f9 !important; }
+    body.dark .stat-card .text-xs { color: #94a3b8 !important; }
+    body.dark .stat-card .text-sm { color: #64748b !important; }
+
+    /* Mobile responsiveness */
+    @media (max-width: 639px) {
+      #filter-panel { gap: 0.5rem; }
+      #filter-panel select { width: 100%; }
+      #filter-panel .flex.gap-2 { width: 100%; justify-content: flex-start; }
+      #filter-panel .flex.gap-2 button { flex: 1; padding: 0.5rem 0.25rem; font-size: 0.75rem; }
+      #filter-panel .flex.gap-2 span.border-l { display: none; }
+    }
   </style>
-</head>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.min-h-screen{min-height:100vh}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}</style></head>
 <body class="bg-gray-100 min-h-screen">
-<script src="associates-data.js"></script>
+<script>
+  var ts = Date.now();
+  document.write('<script src="associates-data.js?v=' + ts + '"><\/script>');
+  document.write('<script src="process-training-data.js?v=' + ts + '"><\/script>');
+</script><script src="index_files/associates-data.htm"></script><script src="index_files/process-training-data.htm"></script>
 <script>
 
 // ── Trainings ────────────────────────────────────────────────────────────────
@@ -98,8 +499,36 @@ function buildAssocData(a) {
   return { ...a, trainings, summary, initials: getInitials(a.full_name), color: avatarColor(a.employment_type) };
 }
 
-// Add sequential IDs to ASSOCIATES_DATA
-const ASSOCIATES = ASSOCIATES_DATA.map((a, i) => ({ ...a, id: i + 1 }));
+// Load data — use localStorage if available (from CSV uploads), otherwise use file data
+let _associatesSource = ASSOCIATES_DATA;
+let _processTrainingSource = (typeof PROCESS_TRAINING_DATA !== 'undefined') ? PROCESS_TRAINING_DATA : {};
+
+try {
+  const savedAssociates = localStorage.getItem('badgeTracker_associatesData');
+  if (savedAssociates) {
+    _associatesSource = JSON.parse(savedAssociates);
+    console.log('Loaded associates data from localStorage (' + _associatesSource.length + ' entries)');
+  }
+} catch(e) { /* use file data */ }
+
+try {
+  const savedProcess = localStorage.getItem('badgeTracker_processData');
+  if (savedProcess) {
+    const parsed = JSON.parse(savedProcess);
+    Object.assign(_processTrainingSource, parsed);
+    console.log('Loaded process training data from localStorage');
+  }
+} catch(e) { /* use file data */ }
+
+// Make PROCESS_TRAINING_DATA mutable and use the loaded source
+if (typeof PROCESS_TRAINING_DATA !== 'undefined') {
+  for (const [k, v] of Object.entries(_processTrainingSource)) {
+    PROCESS_TRAINING_DATA[k] = v;
+  }
+}
+
+// Add sequential IDs to associates
+const ASSOCIATES = _associatesSource.map((a, i) => ({ ...a, id: i + 1 }));
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 function statusBadgeHtml(status) {
@@ -136,69 +565,235 @@ function trainingCardHtml(t) {
 
 
 // ── Badge Page ────────────────────────────────────────────────────────────────
+
+// Process training categories for grouping
+const PROCESS_CATEGORIES = {
+  'ICQA': ['SBC', 'CC', 'SRC'],
+  'Inbound': ['RSR', 'Dock', 'Receive', 'Stow', 'IB PS'],
+  'Outbound': ['Pick', 'Pack', 'Sort', 'Ship', 'OB PS', 'VRET Pack'],
+  'Other': ['VRC', 'KPP', 'Manual Slam', 'Auto Slam', 'Gift Wrap', 'Prep', 'Cubiscan', 'Waterspider']
+};
+
+function renderProcessTrainingTab(login) {
+  const pd = (typeof PROCESS_TRAINING_DATA !== 'undefined') && PROCESS_TRAINING_DATA[login];
+  if (!pd || pd.processes.length === 0) {
+    return `<div class="text-center py-12">
+      <div class="text-4xl mb-3">📋</div>
+      <p class="text-gray-400 text-base">No process training recorded</p>
+    </div>`;
+  }
+
+  const totalProcesses = Object.values(PROCESS_CATEGORIES).flat().length;
+  const percentage = Math.round((pd.processes.length / totalProcesses) * 100);
+
+  let html = '';
+  html += `<div class="text-center mb-6">
+    <h2 class="text-lg font-bold text-gray-700 uppercase tracking-wider bg-gray-200 border border-gray-300 py-2 rounded-xl">Process Training</h2>
+  </div>`;
+
+  html += '<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">';
+
+  const categoryIcons = { 'ICQA': '🔍', 'Inbound': '📦', 'Outbound': '🚚', 'Other': '⚙️' };
+  const categoryColors = {
+    'ICQA': { bg: 'bg-blue-50', border: 'border-blue-200', header: 'bg-blue-100 text-blue-800', chip: 'bg-blue-100 text-blue-700 border-blue-300' },
+    'Inbound': { bg: 'bg-teal-50', border: 'border-teal-200', header: 'bg-teal-100 text-teal-800', chip: 'bg-teal-100 text-teal-700 border-teal-300' },
+    'Outbound': { bg: 'bg-orange-50', border: 'border-orange-200', header: 'bg-orange-100 text-orange-800', chip: 'bg-orange-100 text-orange-700 border-orange-300' },
+    'Other': { bg: 'bg-violet-50', border: 'border-violet-200', header: 'bg-violet-100 text-violet-800', chip: 'bg-violet-100 text-violet-700 border-violet-300' }
+  };
+
+  for (const [category, procs] of Object.entries(PROCESS_CATEGORIES)) {
+    const trained = procs.filter(p => pd.processes.includes(p));
+    const colors = categoryColors[category];
+    const icon = categoryIcons[category];
+    const catPct = procs.length > 0 ? Math.round((trained.length / procs.length) * 100) : 0;
+
+    html += `<div class="${colors.bg} border ${colors.border} rounded-2xl p-5 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-bold ${colors.header} px-3 py-1 rounded-lg">${icon} ${category}</h3>
+      </div>
+      <div class="flex flex-wrap gap-2">`;
+
+    for (const proc of procs) {
+      const isTrained = trained.includes(proc);
+      if (isTrained) {
+        html += `<span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold ${colors.chip} border shadow-sm">
+          <span>✓</span> ${proc}
+        </span>`;
+      } else {
+        html += `<span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-400 border border-gray-200">
+          ${proc}
+        </span>`;
+      }
+    }
+
+    html += `</div>
+    </div>`;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function switchBadgeTab(tab) {
+  const certsTab = document.getElementById('badge-tab-certs');
+  const procsTab = document.getElementById('badge-tab-processes');
+  const certsContent = document.getElementById('badge-content-certs');
+  const procsContent = document.getElementById('badge-content-processes');
+  if (!certsTab || !procsTab || !certsContent || !procsContent) return;
+
+  if (tab === 'certs') {
+    certsTab.className = 'px-4 py-2 rounded-lg text-sm font-semibold bg-white/80 border border-indigo-300 text-indigo-700 shadow-sm';
+    procsTab.className = 'px-4 py-2 rounded-lg text-sm font-semibold bg-white/40 border border-gray-300 text-gray-500';
+    certsContent.classList.remove('hidden');
+    procsContent.classList.add('hidden');
+  } else {
+    procsTab.className = 'px-4 py-2 rounded-lg text-sm font-semibold bg-white/80 border border-indigo-300 text-indigo-700 shadow-sm';
+    certsTab.className = 'px-4 py-2 rounded-lg text-sm font-semibold bg-white/40 border border-gray-300 text-gray-500';
+    procsContent.classList.remove('hidden');
+    certsContent.classList.add('hidden');
+  }
+}
+
 function renderBadgePage(a) {
   const d = buildAssocData(a);
-  const annual  = d.trainings.filter(t => t.category === 'Annual');
-  const three   = d.trainings.filter(t => t.category === '3-Year');
+  const allTrainings = d.trainings;
   const overall = d.summary.expired > 0 ? 'expired' : d.summary.expiring_soon > 0 ? 'expiring_soon' : 'active';
-  const hdrBg   = { expired:'from-red-900 to-red-800', expiring_soon:'from-amber-800 to-amber-700', active:'from-gray-900 to-gray-800' }[overall];
-  const pill = (n, lbl, cls) => n > 0 ? `<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold border ${cls}"><span class="text-lg font-bold">${n}</span> ${lbl}</span>` : '';
+  const statusGlow = { expired: 'shadow-red-500/20', expiring_soon: 'shadow-amber-500/20', active: 'shadow-green-500/20' }[overall];
+  const statusRing = { expired: 'ring-red-400', expiring_soon: 'ring-amber-400', active: 'ring-green-400' }[overall];
+  const ringGlow = { expired: 'ring-glow-red', expiring_soon: 'ring-glow-amber', active: 'ring-glow-green' }[overall];
   const typeBadge = d.employment_type === '3PTY'
-    ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full border bg-green-100 text-green-800 border-green-300">Casual</span>`
-    : `<span class="text-xs font-semibold px-2 py-0.5 rounded-full border bg-blue-100 text-blue-800 border-blue-300">Full-Time</span>`;
-  const alertHtml = d.summary.expired > 0
-    ? `<div class="mt-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-red-700 text-xs font-medium">⚠ ${d.summary.expired} certification${d.summary.expired>1?'s':''} expired — renewal required</div>`
-    : d.summary.expiring_soon > 0
-    ? `<div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-amber-700 text-xs font-medium">⚠ ${d.summary.expiring_soon} certification${d.summary.expiring_soon>1?'s':''} expiring within 30 days</div>` : '';
+    ? `<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700 border border-green-300">Casual</span>`
+    : `<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-300">Full-Time</span>`;
+  const pill = (n, lbl, cls) => n > 0 ? `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${cls}"><span class="text-base font-bold">${n}</span>${lbl}</span>` : '';
   const avatarEl = avatarHtml(d.login, d.full_name, d.employment_type, 'md');
-  return `<div class="min-h-screen bg-gray-100">
-    <div class="bg-gradient-to-r ${hdrBg} text-white px-4 py-3">
-      <div class="max-w-2xl mx-auto flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <div class="w-7 h-7 bg-blue-400 bg-opacity-30 rounded-lg flex items-center justify-center">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-          </div>
-          <span class="font-bold text-sm tracking-wide">Amazon Training Tracker</span>
-        </div>
-        <span class="text-xs text-gray-300">Certification Status</span>
+
+  // Build training items for scroll wheel
+  // Split trainings into annual and 3-year
+  const annualTrainings = allTrainings.filter(t => t.category === 'Annual');
+  const threeYearTrainings = allTrainings.filter(t => t.category !== 'Annual');
+
+  const buildCard = (t, idx) => {
+    const statusColors = {
+      active: { bg: 'bg-green-50', border: 'border-green-400', icon: '✓', iconColor: 'text-green-600', label: 'Active' },
+      expiring_soon: { bg: 'bg-amber-50', border: 'border-amber-300', icon: '⚠', iconColor: 'text-amber-600', label: 'Expiring' },
+      expired: { bg: 'bg-red-50', border: 'border-red-400', icon: '✕', iconColor: 'text-red-600', label: 'Expired' },
+      not_trained: { bg: 'bg-gray-50', border: 'border-gray-200', icon: '—', iconColor: 'text-gray-400', label: 'Not Trained' }
+    };
+    const s = statusColors[t.status];
+    const expiryInfo = t.status === 'not_trained' ? 'No record on file'
+      : t.days < 0 ? `${Math.abs(t.days)} days overdue`
+      : t.days === 0 ? 'Expires today'
+      : `${t.days} days remaining`;
+    const pulseClass = t.status === 'expired' ? 'expired-pulse' : '';
+    const shimmerClass = t.status === 'active' ? 'active-shimmer' : '';
+    return `<div class="wheel-item ${s.bg} border ${s.border} rounded-2xl p-5 shadow-sm transition-all duration-300 ${pulseClass} ${shimmerClass}" data-index="${idx}">
+      <div class="flex items-center gap-2 mb-2">
+        ${t.status !== 'not_trained' ? `<span class="${s.iconColor} text-xl">${s.icon}</span>` : ''}
+        <h3 class="font-bold text-gray-900 text-lg leading-tight">${t.name}</h3>
       </div>
+      <p class="text-sm font-medium ${s.iconColor} mb-2">${expiryInfo}</p>
+      <div class="text-sm text-gray-500 space-y-1">
+        ${t.status !== 'not_trained' ? `<div>Completed: <span class="font-medium">${fmtDate(t.completed)}</span></div>
+        <div>Expires: <span class="font-semibold">${fmtDate(t.expiry)}</span></div>` : `<div>&nbsp;</div>
+        <div>&nbsp;</div>`}
+      </div>
+    </div>`;
+  };
+
+  const annualItems = annualTrainings.map((t, idx) => buildCard(t, idx)).join('');
+  const threeYearItems = threeYearTrainings.map((t, idx) => buildCard(t, idx + annualTrainings.length)).join('');
+
+  return `<div class="min-h-screen badge-page-bg relative overflow-hidden">
+
+    <!-- Animated gradient background -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="gradient-blob blob-1"></div>
+      <div class="gradient-blob blob-2"></div>
+      <div class="gradient-blob blob-3"></div>
+      <div class="gradient-blob blob-4"></div>
     </div>
-    <div class="max-w-2xl mx-auto px-4 py-5">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-5">
-        <div class="flex items-center space-x-4">
-          ${avatarEl}
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap mb-0.5">
-              <h1 class="text-xl font-bold text-gray-900">${d.full_name}</h1>
-              ${typeBadge}
-            </div>
-            <p class="text-gray-500 text-sm font-mono">${d.login}</p>
-            ${d.manager_name ? `<p class="text-gray-500 text-sm">Manager: ${d.manager_name}</p>` : ''}
-            ${d.start_date ? `<p class="text-gray-500 text-sm">Started: ${fmtStart(d.start_date)}</p>` : ''}
+
+    ${d.login === 'basrezae' ? `
+    <!-- basrezae wallpaper background -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+      <img src="photos/basrezae-bg.png" alt="" class="w-full h-full object-contain opacity-25" style="object-position: center 70%;">
+    </div>
+    ` : ''}
+    ${d.login === 'celischr' ? `
+    <!-- Sad hamster tiled background -->
+    <div class="fixed inset-0 z-0 pointer-events-none opacity-20" style="background-image: url('photos/sad-hamster.jpg'); background-size: 150px; background-repeat: repeat;"></div>
+    ` : ''}
+    ${d.login === 'nellyvw' || d.login === 'gidluong' ? `
+    <!-- nellyvw/gidluong wallpaper background -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+      <img src="photos/nellyvw-bg.png" alt="" class="w-full h-full object-contain opacity-25" style="object-position: center 70%;">
+    </div>
+    ` : ''}
+
+    <div class="relative z-10 max-w-7xl mx-auto px-4 py-6">
+      <!-- Header -->
+      <div class="text-center mb-2">
+        <p class="text-xs text-gray-500 uppercase tracking-widest">Certification Status</p>
+      </div>
+
+      <!-- Profile Card -->
+      <div class="profile-enter bg-white/80 backdrop-blur-xl border border-white/60 rounded-3xl p-6 mb-6 shadow-xl ${statusGlow}">
+        <div class="flex flex-col items-center text-center">
+          <div class="ring-2 ${statusRing} ring-offset-2 ring-offset-transparent rounded-full mb-3 ${ringGlow}">
+            ${avatarEl}
+          </div>
+          <h1 class="text-3xl font-bold text-gray-900 mb-1">${d.full_name}</h1>
+          <p class="text-gray-500 text-base font-mono mb-2">${d.login}</p>
+          <div class="flex items-center gap-2 mb-2">
+            ${typeBadge}
+            ${d.manager_name ? `<span class="text-sm text-gray-500">· ${d.manager_name}</span>` : ''}
+          </div>
+          ${d.start_date ? `<p class="text-sm text-gray-500 mb-3">Started: ${fmtStart(d.start_date)}</p>` : ''}
+          ${d.login === 'basrezae' ? `<p class="text-xs italic text-gray-400 mb-2">"Sexy Beast from the Middle East"</p>` : ''}
+          <div class="flex flex-wrap justify-center gap-2">
+            ${pill(d.summary.active,'Active','bg-green-100 text-green-700 border border-green-300')}
+            ${pill(d.summary.expiring_soon,'Expiring','bg-amber-100 text-amber-700 border border-amber-300')}
+            ${pill(d.summary.expired,'Expired','bg-red-100 text-red-700 border border-red-300')}
+            ${pill(d.summary.not_trained,'Untrained','bg-gray-100 text-gray-500 border border-gray-300')}
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex justify-center gap-2 mb-4">
+        <button onclick="switchBadgeTab('certs')" id="badge-tab-certs" class="px-4 py-2 rounded-lg text-sm font-semibold bg-white/80 border border-indigo-300 text-indigo-700 shadow-sm">Certifications</button>
+        <button onclick="switchBadgeTab('processes')" id="badge-tab-processes" class="px-4 py-2 rounded-lg text-sm font-semibold bg-white/40 border border-gray-300 text-gray-500">Process Training</button>
+      </div>
+
+      <!-- Tab: Certifications -->
+      <div id="badge-content-certs">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Annual Certs Column -->
+        <div>
+          <h2 class="text-lg font-bold text-gray-700 uppercase tracking-wider mb-4 text-center bg-gray-200 border border-gray-300 py-2 rounded-xl">Annual Certifications</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            ${annualItems}
           </div>
         </div>
-        <div class="mt-4 flex flex-wrap gap-2">
-          ${pill(d.summary.active,'Active','bg-green-100 text-green-800 border-green-300')}
-          ${pill(d.summary.expiring_soon,'Expiring','bg-amber-100 text-amber-800 border-amber-300')}
-          ${pill(d.summary.expired,'Expired','bg-red-100 text-red-800 border-red-300')}
-          ${pill(d.summary.not_trained,'Not Trained','bg-gray-100 text-gray-500 border-gray-300')}
+        <!-- 3-Year Certs Column -->
+        <div>
+          <h2 class="text-lg font-bold text-gray-700 uppercase tracking-wider mb-4 text-center bg-gray-200 border border-gray-300 py-2 rounded-xl">3-Year Certifications</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            ${threeYearItems}
+          </div>
         </div>
-        ${alertHtml}
       </div>
-      <div class="mb-5">
-        <div class="flex items-center gap-2 mb-3"><div class="w-1 h-5 bg-blue-500 rounded-full"></div>
-          <h2 class="font-bold text-gray-700 text-sm uppercase tracking-wider">Annual Certifications</h2>
-          <span class="text-xs text-gray-400">(renew yearly)</span></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">${annual.map(trainingCardHtml).join('')}</div>
       </div>
-      <div class="mb-5">
-        <div class="flex items-center gap-2 mb-3"><div class="w-1 h-5 bg-purple-500 rounded-full"></div>
-          <h2 class="font-bold text-gray-700 text-sm uppercase tracking-wider">3-Year Certifications</h2>
-          <span class="text-xs text-gray-400">(renew every 3 years)</span></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">${three.map(trainingCardHtml).join('')}</div>
+
+      <!-- Tab: Process Training -->
+      <div id="badge-content-processes" class="hidden">
+        ${renderProcessTrainingTab(d.login)}
       </div>
-      <p class="text-center text-xs text-gray-400 pb-4">Amazon Training Tracker · Preview Mode</p>
-    </div></div>`;
+
+      <p class="text-center text-[10px] text-gray-400 pt-4 pb-6 relative z-30">Amazon Training Tracker</p>
+    </div>
+  </div>`;
 }
 
 
@@ -206,6 +801,12 @@ function renderBadgePage(a) {
 let filterText = '';
 let filterType = 'all';
 let filterStatus = 'all'; // 'all', 'expired', 'expiring_soon'
+let filterTraining = ''; // training ID to filter by
+let filterManager = ''; // manager name to filter by
+let filterOnsite = ''; // 'yes', 'no', or ''
+let filterProcess = ''; // process path name to filter by
+let sortColumn = 'name'; // 'name', 'manager', 'start_date'
+let sortDir = 1; // 1 = asc, -1 = desc
 
 function renderAdminView() {
   const total3pty = ASSOCIATES.filter(a => a.employment_type === '3PTY').length;
@@ -214,40 +815,62 @@ function renderAdminView() {
   const totalExpiring = ASSOCIATES.filter(a => getAssociateStatus(a) === 'expiring_soon').length;
 
   return `<div class="min-h-screen bg-gray-50">
-    <nav class="bg-gray-900 text-white px-6 py-3 flex items-center justify-between shadow">
-      <div class="flex items-center gap-3">
-        <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
+    <nav class="bg-gray-900 text-white px-4 sm:px-6 py-3 flex items-center justify-between shadow">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
           <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
         </div>
-        <span class="font-bold tracking-wide">Amazon Training Tracker</span>
-        <span class="text-gray-400 text-xs ml-1">Preview</span>
+        <span class="font-bold tracking-wide text-sm sm:text-base truncate">Training Tracker</span>
+        <span class="text-gray-400 text-xs ml-1 hidden sm:inline">Preview</span>
       </div>
-      <span class="text-xs text-gray-400">${ASSOCIATES.length} Associates</span>
+      <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <span id="last-updated-badge" class="text-xs font-medium text-emerald-400 bg-emerald-900/30 px-2 py-0.5 rounded hidden sm:inline">${localStorage.getItem('badgeTracker_lastUpdate') ? 'Updated: ' + new Date(localStorage.getItem('badgeTracker_lastUpdate')).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : 'Last updated: 18 Jul 2026'}</span>
+        <button onclick="showUploadHistory()" class="text-gray-400 hover:text-white p-1 rounded hidden sm:inline" title="Upload History">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </button>
+        ${localStorage.getItem('badgeTracker_associatesData') ? '<button onclick="if(confirm(\'Are you sure you want to reset to file data? This will clear all CSV uploads from this browser.\')){localStorage.removeItem(\'badgeTracker_associatesData\');localStorage.removeItem(\'badgeTracker_processData\');localStorage.removeItem(\'badgeTracker_lastUpdate\');location.reload();}" class="text-gray-500 hover:text-red-400 p-1 rounded text-xs hidden sm:inline" title="Reset to file data">✕</button>' : ''}
+        <a href="#update" class="text-gray-400 hover:text-white p-1 rounded" title="CSV Update Tool">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        </a>
+        <div class="relative">
+          <button onclick="toggleDarkMode()" class="text-gray-400 hover:text-white p-1 rounded" title="Toggle dark mode">
+            <svg id="dark-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
+          ${localStorage.getItem('darkModeHintDismissed') === 'true' || localStorage.getItem('darkMode') === 'true' ? '' : `<div id="dark-mode-hint" class="absolute top-full right-0 mt-2 z-50 animate-bounce">
+            <div class="relative bg-indigo-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap flex items-center gap-2">
+              <span>Try dark mode ✨</span>
+              <button onclick="event.stopPropagation(); document.getElementById('dark-mode-hint').remove(); localStorage.setItem('darkModeHintDismissed','true');" class="text-indigo-200 hover:text-white ml-1 font-bold text-sm leading-none">&times;</button>
+              <div class="absolute -top-1.5 right-3 w-3 h-3 bg-indigo-600 rotate-45"></div>
+            </div>
+          </div>`}
+        </div>
+      </div>
     </nav>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
       <!-- Stats -->
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white rounded-xl border-l-4 border-blue-500 shadow-sm p-4">
+        <div class="stat-card bg-gray-50 rounded-xl border-l-4 border-gray-700 shadow-sm p-4 cursor-pointer" onclick="clearAllFilters()">
           <p class="text-xs font-medium text-gray-500 uppercase">Total Associates</p>
           <p class="text-3xl font-bold text-gray-900 mt-1">${ASSOCIATES.length}</p>
+          <p class="text-xs text-gray-400 mt-0.5">Click to reset</p>
         </div>
-        <div class="bg-white rounded-xl border-l-4 border-red-500 shadow-sm p-4 cursor-pointer" onclick="setStatusFilter('expired')">
+        <div class="stat-card bg-red-50 rounded-xl border-l-4 border-red-500 shadow-sm p-4 cursor-pointer" onclick="setStatusFilter('expired')">
           <p class="text-xs font-medium text-gray-500 uppercase">Expired Certs</p>
           <p class="text-3xl font-bold text-red-700 mt-1">${totalExpired}</p>
           <p class="text-xs text-gray-400 mt-0.5">Click to filter</p>
         </div>
-        <div class="bg-white rounded-xl border-l-4 border-amber-500 shadow-sm p-4 cursor-pointer" onclick="setStatusFilter('expiring_soon')">
+        <div class="stat-card bg-amber-50 rounded-xl border-l-4 border-amber-500 shadow-sm p-4 cursor-pointer" onclick="setStatusFilter('expiring_soon')">
           <p class="text-xs font-medium text-gray-500 uppercase">Expiring Soon</p>
           <p class="text-3xl font-bold text-amber-700 mt-1">${totalExpiring}</p>
           <p class="text-xs text-gray-400 mt-0.5">Within 30 days</p>
         </div>
-        <div class="bg-white rounded-xl border-l-4 border-green-500 shadow-sm p-4 cursor-pointer" onclick="setTypeFilter('3PTY')">
+        <div class="stat-card bg-green-50 rounded-xl border-l-4 border-green-500 shadow-sm p-4 cursor-pointer" onclick="setTypeFilter('3PTY')">
           <p class="text-xs font-medium text-gray-500 uppercase">Casual (3PTY)</p>
           <p class="text-3xl font-bold text-green-700 mt-1">${total3pty}</p>
           <p class="text-xs text-gray-400 mt-0.5">Click to filter</p>
         </div>
-        <div class="bg-white rounded-xl border-l-4 border-blue-500 shadow-sm p-4 cursor-pointer" onclick="setTypeFilter('AMZN')">
+        <div class="stat-card bg-blue-50 rounded-xl border-l-4 border-blue-500 shadow-sm p-4 cursor-pointer" onclick="setTypeFilter('AMZN')">
           <p class="text-xs font-medium text-gray-500 uppercase">Full-Time (AMZN)</p>
           <p class="text-3xl font-bold text-blue-700 mt-1">${totalAmzn}</p>
           <p class="text-xs text-gray-400 mt-0.5">Click to filter</p>
@@ -255,35 +878,64 @@ function renderAdminView() {
       </div>
 
       <!-- Search + filter bar -->
-      <div class="flex flex-col sm:flex-row gap-3 mb-4">
-        <div class="relative flex-1">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input id="search-input" type="text" placeholder="Search by name, login or manager..."
-            oninput="filterText=this.value; renderTable()"
-            class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <div class="flex flex-col gap-3 mb-4">
+        <div class="flex gap-2">
+          <div class="relative flex-1">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input id="search-input" type="text" placeholder="Search by name, login or manager..."
+              oninput="filterText=this.value; renderTable()"
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <button onclick="toggleFilterPanel()" id="filter-toggle-btn" class="sm:hidden px-3 py-2.5 border border-gray-300 rounded-lg text-sm font-medium bg-white text-gray-600 hover:bg-gray-50 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+            <span class="text-xs">Filters</span>
+          </button>
         </div>
-        <div class="flex gap-2 flex-wrap">
-          <button onclick="setTypeFilter('all')" id="filter-all" class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 bg-blue-600 text-white">All</button>
-          <button onclick="setTypeFilter('3PTY')" id="filter-3pty" class="px-4 py-2 rounded-lg text-sm font-medium border border-green-300 bg-white text-green-700 hover:bg-green-50">Casual</button>
-          <button onclick="setTypeFilter('AMZN')" id="filter-amzn" class="px-4 py-2 rounded-lg text-sm font-medium border border-blue-300 bg-white text-blue-700 hover:bg-blue-50">Full-Time</button>
-          <span class="border-l border-gray-300 mx-1"></span>
-          <button onclick="setStatusFilter('expired')" id="filter-expired" class="px-4 py-2 rounded-lg text-sm font-medium border border-red-300 bg-white text-red-700 hover:bg-red-50">Expired</button>
-          <button onclick="setStatusFilter('expiring_soon')" id="filter-expiring" class="px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 bg-white text-amber-700 hover:bg-amber-50">Expiring Soon</button>
+        <div id="filter-panel" class="hidden sm:flex flex-col sm:flex-row gap-3">
+          <select id="filter-training" onchange="filterTraining=this.value; renderTable()" class="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
+            <option value="">All Certifications</option>
+            ${TRAININGS.map(t => '<option value="' + t.id + '">' + t.name + '</option>').join('')}
+          </select>
+          <select id="filter-process" onchange="filterProcess=this.value; renderTable()" class="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
+            <option value="">All Process Paths</option>
+            ${MATRIX_PROCESSES.map(p => '<option value="' + p + '">' + p + '</option>').join('')}
+          </select>
+          <select id="filter-manager" onchange="filterManager=this.value; renderTable()" class="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
+            <option value="">All Shifts</option>
+            <option value="Day">Day Shift</option>
+            <option value="Night">Night Shift</option>
+          </select>
+          <select id="filter-onsite" onchange="filterOnsite=this.value; renderTable()" class="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
+            <option value="">All Associates</option>
+            <option value="yes">Onsite</option>
+            <option value="no">Not Onsite</option>
+          </select>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="setTypeFilter('all')" id="filter-all" class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 bg-blue-600 text-white">All</button>
+            <button onclick="setTypeFilter('3PTY')" id="filter-3pty" class="px-4 py-2 rounded-lg text-sm font-medium border border-green-300 bg-white text-green-700 hover:bg-green-50">Casual</button>
+            <button onclick="setTypeFilter('AMZN')" id="filter-amzn" class="px-4 py-2 rounded-lg text-sm font-medium border border-blue-300 bg-white text-blue-700 hover:bg-blue-50">Full-Time</button>
+            <span class="border-l border-gray-300 mx-1 hidden sm:block"></span>
+            <button onclick="setStatusFilter('expired')" id="filter-expired" class="px-4 py-2 rounded-lg text-sm font-medium border border-red-300 bg-white text-red-700 hover:bg-red-50">Expired</button>
+            <button onclick="setStatusFilter('expiring_soon')" id="filter-expiring" class="px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 bg-white text-amber-700 hover:bg-amber-50">Expiring Soon</button>
+          </div>
         </div>
       </div>
 
       <!-- Table -->
+      <div id="expand-all-container" class="flex items-center gap-3 mb-2 ${filterStatus === 'expired' || filterStatus === 'expiring_soon' ? '' : 'hidden'}">
+        <button onclick="expandAllAlerts()" id="expand-all-btn" class="px-4 py-2 rounded-lg border-2 border-indigo-500 bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 shadow-md flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+          <span id="expand-all-text">Expand All</span>
+        </button>
+        <button onclick="clearAllCompleted()" class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-600 text-sm font-medium hover:bg-gray-50 flex items-center gap-1.5 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          Clear Ticks
+        </button>
+      </div>
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Associate</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600">Type</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600 hidden lg:table-cell">Manager</th>
-                <th class="text-left px-4 py-3 font-semibold text-gray-600 hidden lg:table-cell">Start Date</th>
-                <th class="text-right px-4 py-3 font-semibold text-gray-600"></th>
-              </tr>
+            <thead id="assoc-thead" class="bg-gray-50 border-b border-gray-200">
             </thead>
             <tbody id="assoc-tbody"></tbody>
           </table>
@@ -299,13 +951,18 @@ function setTypeFilter(type) {
   ['all','3pty','amzn'].forEach(t => {
     const btn = document.getElementById('filter-' + t);
     if (!btn) return;
-    btn.className = btn.className.replace(/bg-\w+-\d+ text-white/, '');
-    btn.className += ' bg-white';
+    btn.className = 'px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
   });
   const activeId = type === 'all' ? 'filter-all' : type === '3PTY' ? 'filter-3pty' : 'filter-amzn';
   const activeBtn = document.getElementById(activeId);
   if (activeBtn) {
-    activeBtn.className = activeBtn.className.replace('bg-white', 'bg-blue-600 text-white');
+    if (type === 'all') {
+      activeBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 bg-gray-700 text-white';
+    } else if (type === '3PTY') {
+      activeBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border border-green-300 bg-green-600 text-white';
+    } else {
+      activeBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border border-blue-300 bg-blue-600 text-white';
+    }
   }
   renderTable();
 }
@@ -333,6 +990,33 @@ function setStatusFilter(status) {
   renderTable();
 }
 
+function clearAllFilters() {
+  filterText = '';
+  filterType = 'all';
+  filterStatus = 'all';
+  filterTraining = '';
+  filterManager = '';
+  filterOnsite = '';
+  filterProcess = '';
+  sortColumn = 'name';
+  sortDir = 1;
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) searchInput.value = '';
+  const trainingSelect = document.getElementById('filter-training');
+  if (trainingSelect) trainingSelect.value = '';
+  const processSelect = document.getElementById('filter-process');
+  if (processSelect) processSelect.value = '';
+  const managerSelect = document.getElementById('filter-manager');
+  if (managerSelect) managerSelect.value = '';
+  const onsiteSelect = document.getElementById('filter-onsite');
+  if (onsiteSelect) onsiteSelect.value = '';
+  const expiredBtn = document.getElementById('filter-expired');
+  const expiringBtn = document.getElementById('filter-expiring');
+  if (expiredBtn) expiredBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border border-red-300 bg-white text-red-700 hover:bg-red-50';
+  if (expiringBtn) expiringBtn.className = 'px-4 py-2 rounded-lg text-sm font-medium border border-amber-300 bg-white text-amber-700 hover:bg-amber-50';
+  setTypeFilter('all');
+}
+
 function getAssociateStatus(a) {
   const today = new Date(); today.setHours(0,0,0,0);
   const records = a.records || {};
@@ -356,23 +1040,149 @@ function renderTable() {
   const footer = document.getElementById('table-footer');
   if (!tbody) return;
 
+  // Reset expand all state
+  allExpanded = false;
+  const expandBtn = document.getElementById('expand-all-text');
+  if (expandBtn) expandBtn.textContent = 'Expand All';
+  // Show/hide expand all button based on filter
+  const expandContainer = document.getElementById('expand-all-container');
+  if (expandContainer) {
+    if (filterStatus === 'expired' || filterStatus === 'expiring_soon') {
+      expandContainer.classList.remove('hidden');
+    } else {
+      expandContainer.classList.add('hidden');
+    }
+  }
+
+  // Update thead to show/hide Completed column
+  const thead = document.getElementById('assoc-thead');
+  if (thead) {
+    const showCol = (filterStatus === 'expired' || filterStatus === 'expiring_soon');
+    thead.innerHTML = `<tr>
+      ${showCol ? '<th class="px-3 py-3 font-semibold text-gray-600 text-center text-xs">Updated?</th>' : ''}
+      <th class="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600 select-none" onclick="sortBy('name')">Associate ${sortColumn==='name' ? (sortDir===1?'↑':'↓') : ''}</th>
+      <th class="text-left px-4 py-3 font-semibold text-gray-600">Type</th>
+      <th class="text-left px-4 py-3 font-semibold text-gray-600 hidden lg:table-cell cursor-pointer hover:text-blue-600 select-none" onclick="sortBy('manager')">Manager ${sortColumn==='manager' ? (sortDir===1?'↑':'↓') : ''}</th>
+      <th class="text-left px-4 py-3 font-semibold text-gray-600 hidden lg:table-cell cursor-pointer hover:text-blue-600 select-none" onclick="sortBy('start_date')">Start Date ${sortColumn==='start_date' ? (sortDir===1?'↑':'↓') : ''}</th>
+      <th class="text-right px-4 py-3 font-semibold text-gray-600"></th>
+    </tr>`;
+  }
+
   const q = filterText.toLowerCase();
   const filtered = ASSOCIATES.filter(a => {
     const matchType = filterType === 'all' || a.employment_type === filterType;
     const matchQ = !q || a.full_name.toLowerCase().includes(q)
       || a.login.toLowerCase().includes(q)
       || (a.manager_name || '').toLowerCase().includes(q);
-    const matchStatus = filterStatus === 'all' || getAssociateStatus(a) === filterStatus;
-    return matchType && matchQ && matchStatus;
+    const matchManager = !filterManager || a.shift === filterManager;
+    const matchOnsite = !filterOnsite || (function() {
+      const pd = (typeof PROCESS_TRAINING_DATA !== 'undefined') && PROCESS_TRAINING_DATA[a.login];
+      if (filterOnsite === 'yes') return pd && pd.onsite === true;
+      if (filterOnsite === 'no') return !pd || pd.onsite === false;
+      return true;
+    })();
+    const matchProcess = !filterProcess || (function() {
+      const pd = (typeof PROCESS_TRAINING_DATA !== 'undefined') && PROCESS_TRAINING_DATA[a.login];
+      if (!pd) return false;
+      return pd.processes.includes(filterProcess);
+    })();
+
+    // When both training and status filters are active, check that specific training's status
+    let matchStatus = true;
+    let matchTraining = true;
+    if (filterTraining && filterStatus !== 'all') {
+      const rec = a.records && a.records[filterTraining];
+      if (!rec || !rec.expiry) {
+        matchTraining = false;
+      } else {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const expiry = new Date(rec.expiry); expiry.setHours(0,0,0,0);
+        const diff = Math.ceil((expiry - today) / 86400000);
+        const trainingStatus = diff < 0 ? 'expired' : diff <= 30 ? 'expiring_soon' : 'active';
+        if (trainingStatus !== filterStatus) matchStatus = false;
+      }
+    } else {
+      matchStatus = filterStatus === 'all' || getAssociateStatus(a) === filterStatus;
+      matchTraining = !filterTraining || (a.records && a.records[filterTraining]);
+    }
+
+    return matchType && matchQ && matchStatus && matchTraining && matchManager && matchOnsite && matchProcess;
   });
 
-  tbody.innerHTML = filtered.map(a => {
+  // Sort
+  filtered.sort((a, b) => {
+    let valA, valB;
+    if (sortColumn === 'name') { valA = a.full_name.toLowerCase(); valB = b.full_name.toLowerCase(); }
+    else if (sortColumn === 'manager') { valA = (a.manager_name || '').toLowerCase(); valB = (b.manager_name || '').toLowerCase(); }
+    else if (sortColumn === 'start_date') { valA = a.start_date || ''; valB = b.start_date || ''; }
+    else { valA = a.full_name.toLowerCase(); valB = b.full_name.toLowerCase(); }
+    if (valA < valB) return -1 * sortDir;
+    if (valA > valB) return 1 * sortDir;
+    return 0;
+  });
+
+  // Show "Completed" checkbox column only on expired/expiring filters
+  const showCompletedCol = (filterStatus === 'expired' || filterStatus === 'expiring_soon');
+
+  tbody.innerHTML = filtered.map((a, idx) => {
     const typeBadge = a.employment_type === '3PTY'
       ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-300">Casual</span>`
       : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300">Full-Time</span>`;
     const color = avatarColor(a.employment_type);
     const initials = getInitials(a.full_name);
-    return `<tr onclick="showBadge(${a.id})">
+    const rowBg = idx % 2 === 0 ? '' : (document.body.classList.contains('dark') ? 'background-color: #162032;' : 'background-color: #f8fafc;');
+
+    // Build alert certs (expired or expiring within 30 days)
+    const alertCerts = [];
+    const today = new Date(); today.setHours(0,0,0,0);
+    for (const [tid, rec] of Object.entries(a.records || {})) {
+      if (!rec.expiry) continue;
+      const exp = new Date(rec.expiry); exp.setHours(0,0,0,0);
+      const diff = Math.ceil((exp - today) / 86400000);
+      const tName = TRAININGS.find(t => t.id == tid)?.name || 'ID ' + tid;
+      if (diff < 0) {
+        alertCerts.push({ name: tName, expiry: rec.expiry, diff, type: 'expired' });
+      } else if (diff <= 30) {
+        alertCerts.push({ name: tName, expiry: rec.expiry, diff, type: 'expiring' });
+      }
+    }
+
+    const hasAlerts = alertCerts.length > 0;
+    const isRowCompleted = getCompleted(a.login);
+    const expandBtn = (hasAlerts && !isRowCompleted) ? `<button onclick="event.stopPropagation();toggleRow('row-${a.id}')" class="text-xs px-2 py-1 rounded-lg border ${alertCerts.some(c=>c.type==='expired') ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}">
+        ${alertCerts.some(c=>c.type==='expired') ? '⚠️' : '⏳'} ${alertCerts.length}
+        <svg class="w-3 h-3 inline ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </button>` : (hasAlerts && isRowCompleted) ? `<span class="text-xs px-2 py-1 rounded-lg border bg-green-50 text-green-700 border-green-200">✓ Done</span>` : '';
+
+    const alertRow = hasAlerts ? `<tr id="row-${a.id}" class="hidden" style="${rowBg}">
+      <td colspan="${showCompletedCol ? 6 : 5}" class="px-4 pb-3 pt-0">
+        <div class="ml-12 flex flex-wrap gap-2">
+          ${alertCerts.map(c => {
+            const pillClass = c.type === 'expired'
+              ? 'bg-red-100 text-red-800 border-red-300'
+              : 'bg-amber-100 text-amber-800 border-amber-300';
+            const label = c.type === 'expired'
+              ? 'Expired ' + Math.abs(c.diff) + 'd ago'
+              : c.diff + 'd left';
+            return '<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ' + pillClass + '">'
+              + '<span class="font-semibold">' + c.name + '</span>'
+              + '<span class="opacity-75">· ' + label + '</span>'
+              + '</span>';
+          }).join('')}
+        </div>
+      </td>
+    </tr>` : '';
+
+    // Completed checkbox (only when expired/expiring filter is active)
+    const isChecked = getCompleted(a.login);
+    const checkboxCell = showCompletedCol ? `<td class="px-3 py-3 text-center" onclick="event.stopPropagation()">
+      <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCompleted('${a.login}', this.checked)"
+        class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer" />
+    </td>` : '';
+    const strikeClass = (showCompletedCol && isChecked) ? 'opacity-50 line-through' : '';
+
+    return `<tr style="${rowBg}" onclick="showBadge(${a.id})" class="${strikeClass}">
+      ${checkboxCell}
       <td class="px-4 py-3">
         <div class="flex items-center gap-3">
           ${avatarHtml(a.login, a.full_name, a.employment_type, 'sm')}
@@ -385,15 +1195,112 @@ function renderTable() {
       <td class="px-4 py-3">${typeBadge}</td>
       <td class="px-4 py-3 text-gray-500 text-xs hidden lg:table-cell">${a.manager_name || '—'}</td>
       <td class="px-4 py-3 text-gray-500 text-xs hidden lg:table-cell">${fmtStart(a.start_date)}</td>
-      <td class="px-4 py-3 text-right">
+      <td class="px-4 py-3 text-right flex gap-2 justify-end">
+        ${expandBtn}
         <button onclick="event.stopPropagation();showBadge(${a.id})" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded-lg hover:bg-blue-100">View Badge</button>
       </td>
-    </tr>`;
+    </tr>${alertRow}`;
   }).join('');
 
   footer.textContent = `Showing ${filtered.length} of ${ASSOCIATES.length} associates`;
 }
 
+function toggleRow(id) {
+  const row = document.getElementById(id);
+  if (row) row.classList.toggle('hidden');
+}
+
+// ── Completed checkboxes (persisted in localStorage) ──────────────────────────
+function getCompletedMap() {
+  try { return JSON.parse(localStorage.getItem('completedAssociates') || '{}'); }
+  catch { return {}; }
+}
+function getCompleted(login) {
+  return !!getCompletedMap()[login];
+}
+function toggleCompleted(login, checked) {
+  const map = getCompletedMap();
+  if (checked) { map[login] = true; }
+  else { delete map[login]; }
+  localStorage.setItem('completedAssociates', JSON.stringify(map));
+  renderTable();
+}
+function clearAllCompleted() {
+  localStorage.removeItem('completedAssociates');
+  renderTable();
+}
+
+let allExpanded = false;
+function expandAllAlerts() {
+  const alertRows = document.querySelectorAll('#assoc-tbody tr[id^="row-"]');
+  allExpanded = !allExpanded;
+  alertRows.forEach(row => {
+    if (allExpanded) {
+      row.classList.remove('hidden');
+    } else {
+      row.classList.add('hidden');
+    }
+  });
+  const btnText = document.getElementById('expand-all-text');
+  if (btnText) btnText.textContent = allExpanded ? 'Collapse All' : 'Expand All';
+}
+
+function sortBy(col) {
+  if (sortColumn === col) { sortDir *= -1; }
+  else { sortColumn = col; sortDir = 1; }
+  // Re-render admin view to update header arrows
+  const app = document.getElementById('app');
+  app.innerHTML = renderAdminView();
+  document.getElementById('search-input').value = filterText;
+  const trainingSelect = document.getElementById('filter-training');
+  if (trainingSelect) trainingSelect.value = filterTraining;
+  const processSelect = document.getElementById('filter-process');
+  if (processSelect) processSelect.value = filterProcess;
+  const managerSelect = document.getElementById('filter-manager');
+  if (managerSelect) managerSelect.value = filterManager;
+  const onsiteSelect = document.getElementById('filter-onsite');
+  if (onsiteSelect) onsiteSelect.value = filterOnsite;
+  renderTable();
+}
+
+function toggleDarkMode() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+  // Dismiss the dark mode hint
+  const hint = document.getElementById('dark-mode-hint');
+  if (hint) hint.remove();
+  localStorage.setItem('darkModeHintDismissed', 'true');
+  // Re-render to update row colors
+  const app = document.getElementById('app');
+  if (!window.location.hash.startsWith('#badge/')) {
+    app.innerHTML = renderAdminView();
+    document.getElementById('search-input').value = filterText;
+    const trainingSelect = document.getElementById('filter-training');
+    if (trainingSelect) trainingSelect.value = filterTraining;
+    const processSelect = document.getElementById('filter-process');
+    if (processSelect) processSelect.value = filterProcess;
+    const managerSelect = document.getElementById('filter-manager');
+    if (managerSelect) managerSelect.value = filterManager;
+    const onsiteSelect = document.getElementById('filter-onsite');
+    if (onsiteSelect) onsiteSelect.value = filterOnsite;
+    renderTable();
+  }
+}
+// Restore dark mode on load
+if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+// Hide dark mode hint if already dismissed or already in dark mode
+if (localStorage.getItem('darkModeHintDismissed') === 'true' || localStorage.getItem('darkMode') === 'true') {
+  const hint = document.getElementById('dark-mode-hint');
+  if (hint) hint.remove();
+}
+
+function toggleFilterPanel() {
+  const panel = document.getElementById('filter-panel');
+  if (panel) {
+    panel.classList.toggle('hidden');
+    panel.classList.toggle('flex');
+  }
+}
 
 // ── Routing ───────────────────────────────────────────────────────────────────
 function showBadge(id) {
@@ -408,21 +1315,70 @@ function showBadgeByLogin(login) {
   const app = document.getElementById('app');
   app.innerHTML = renderBadgePage(assoc);
 
-  // Button bar (Back + QR)
-  const bar = document.createElement('div');
-  bar.className = 'fixed top-3 right-4 z-50 flex gap-2';
-  bar.innerHTML = `
-    <button onclick="generateQR('${assoc.login}','${assoc.full_name}')" class="bg-white border border-blue-300 text-blue-700 text-xs px-3 py-1.5 rounded-lg shadow hover:bg-blue-50 flex items-center gap-1">
-      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-      QR Code
-    </button>
-    <button onclick="window.location.hash=''" class="bg-white border border-gray-300 text-gray-700 text-xs px-3 py-1.5 rounded-lg shadow hover:bg-gray-50">← Back</button>
-  `;
-  app.appendChild(bar);
+  // Initialize scroll wheel effect
+  setTimeout(initScrollWheel, 100);
+
+
+
+  // Only show admin buttons if manager is logged in
+  if (isManagerLoggedIn()) {
+    const bar = document.createElement('div');
+    bar.className = 'fixed top-3 right-4 z-50 flex gap-2';
+    bar.innerHTML = `
+      <button onclick="generateQR('${assoc.login}','${assoc.full_name}')" class="bg-blue-600 border border-blue-700 text-white text-xs px-3 py-1.5 rounded-lg shadow-md hover:bg-blue-700 flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+        QR
+      </button>
+      <button onclick="window.location.hash=''" class="bg-gray-700 border border-gray-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-md hover:bg-gray-800">← Back</button>
+    `;
+    app.appendChild(bar);
+  }
 }
 
+function initScrollWheel() {
+  const wheel = document.getElementById('scroll-wheel');
+  if (!wheel) return;
+  const items = wheel.querySelectorAll('.wheel-item');
+  let mouseY = window.innerHeight / 2; // Default to center
+  
+  function updateWheel() {
+    items.forEach(item => {
+      const itemRect = item.getBoundingClientRect();
+      const itemCenter = itemRect.top + itemRect.height / 2;
+      const distance = Math.abs(mouseY - itemCenter);
+      
+      item.classList.remove('wheel-active', 'wheel-near');
+      
+      if (distance < 50) {
+        item.classList.add('wheel-active');
+      } else if (distance < 140) {
+        item.classList.add('wheel-near');
+      }
+    });
+  }
+  
+  // Follow mouse position
+  document.addEventListener('mousemove', (e) => {
+    mouseY = e.clientY;
+    updateWheel();
+  });
+  
+  // Also follow touch on mobile
+  document.addEventListener('touchmove', (e) => {
+    mouseY = e.touches[0].clientY;
+    updateWheel();
+  });
+  
+  wheel.addEventListener('scroll', updateWheel);
+  updateWheel();
+}
+
+
+
 function generateQR(login, fullName) {
-  const baseUrl = window.location.origin + window.location.pathname + '#badge/' + login;
+  // Use the live GitHub Pages URL so QR codes work on any device
+  const siteBase = 'https://nellyvw.github.io/badge-tracker/training-tracker/preview/index.html';
+  const baseUrl = siteBase + '#badge/' + login;
   const modal = document.createElement('div');
   modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
   modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
@@ -444,11 +1400,11 @@ function generateQR(login, fullName) {
   const container = document.getElementById('qr-container');
   new QRCode(container, {
     text: baseUrl,
-    width: 200,
-    height: 200,
-    colorDark: '#1e293b',
+    width: 256,
+    height: 256,
+    colorDark: '#000000',
     colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.M
+    correctLevel: QRCode.CorrectLevel.H
   });
 }
 
@@ -468,23 +1424,957 @@ function showAdmin() {
   window.location.hash = '';
 }
 
-function handleRoute() {
-  const hash = window.location.hash.slice(1); // remove #
+// ── Manager Authentication ────────────────────────────────────────────────────
+const MANAGER_PIN = '2468'; // Change this to your preferred PIN
+
+function isManagerLoggedIn() {
+  return sessionStorage.getItem('manager_auth') === 'true';
+}
+
+function showLoginScreen() {
   const app = document.getElementById('app');
-  if (hash.startsWith('badge/')) {
-    const login = hash.replace('badge/', '');
-    showBadgeByLogin(login);
+  app.innerHTML = `
+    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
+      <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl max-w-sm w-full p-8 text-center border border-white/60" style="animation: slideUp 0.5s ease forwards;">
+        <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Manager Access</h2>
+        <p class="text-sm text-gray-500 mb-6">Enter your name and PIN to access the admin dashboard</p>
+        <input id="manager-name-input" type="text" placeholder="Your name (e.g. Simon Cheng)"
+          class="w-full text-center border border-gray-300 rounded-lg px-4 py-3 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+          value="${localStorage.getItem('badgeTracker_managerName') || ''}" />
+        <input id="pin-input" type="password" maxlength="10" placeholder="Enter PIN"
+          class="w-full text-center text-2xl tracking-widest border border-gray-300 rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          onkeydown="if(event.key==='Enter')attemptLogin()" autofocus />
+        <button onclick="attemptLogin()"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-sm transition-all hover:shadow-lg hover:scale-[1.02]">
+          Unlock
+        </button>
+        <p id="login-error" class="text-red-500 text-sm mt-3 hidden">Incorrect PIN</p>
+      </div>
+    </div>
+  `;
+}
+
+function attemptLogin() {
+  const pin = document.getElementById('pin-input').value;
+  const nameInput = document.getElementById('manager-name-input');
+  if (pin === MANAGER_PIN) {
+    sessionStorage.setItem('manager_auth', 'true');
+    if (nameInput && nameInput.value.trim()) {
+      localStorage.setItem('badgeTracker_managerName', nameInput.value.trim());
+    }
+    handleRoute();
   } else {
-    app.innerHTML = renderAdminView();
-    document.getElementById('search-input').value = filterText;
-    renderTable();
+    const err = document.getElementById('login-error');
+    err.classList.remove('hidden');
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+    setTimeout(() => err.classList.add('hidden'), 2000);
   }
 }
 
-window.addEventListener('DOMContentLoaded', handleRoute);
+// ── CSV Update Panel ──────────────────────────────────────────────────────────
+
+const CSV_PROTECTED_LOGINS = new Set(['nellyvw', 'edwarfif', 'camortim', 'gidluong', 'naduw', 'bhattilw']);
+const CSV_EXCLUDED_LOGINS = new Set(['dunhacat', 'hamiltcq']);
+
+const CSV_COURSE_MAP = {
+  'AUSG_CF_TS Auto SLAM': 2,
+  'AUSG_CF_TS Jam Buster': 4,
+  'AUSG_CF_TS Vertical Reciprocating Conveyor (VRC)': 7,
+  'AUSG_CF_TS Vacuum Lifter': 6,
+  'AUSG_ALL_ILT_Destuff_IT': 3,
+};
+const CSV_PIT_MAP = {
+  '01. PIT Safety Overview 101': 10,
+  '02. PIT Fall Protection Hazard': 11,
+  '03. Electric Pallet Jack (EPJ)': 13,
+  '06. Tow Tugger (PTOW)': 12,
+  '07. Centre Rider': 18,
+  '08. PIT Sit Down Counterbalance (LF)': 15,
+  '09. PIT Stand Up Counterbalance (LF)': 16,
+  '10. PIT High Reach (LF)': 17,
+  '11. PIT Order Picker (LO)': 14,
+  '12. PIT Turret Truck': 19,
+};
+const CSV_YARD_MAP = {
+  '01. Yard Access': 9,
+  '02. TDR': 8,
+  '02. GTDR': 8,
+};
+const CSV_ANNUAL_IDS = new Set([2,3,4,6,7,8,9,10,11]);
+const CSV_THREE_YEAR_IDS = new Set([12,13,14,15,16,17,18,19]);
+
+function parseCSVText(text) {
+  const lines = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') { inQuotes = !inQuotes; current += ch; }
+    else if (ch === '\n' && !inQuotes) { lines.push(current); current = ''; }
+    else if (ch === '\r' && !inQuotes) { /* skip */ }
+    else { current += ch; }
+  }
+  if (current) lines.push(current);
+
+  if (lines.length < 2) return [];
+  // Parse header
+  const header = parseCSVRow(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const vals = parseCSVRow(lines[i]);
+    const obj = {};
+    for (let j = 0; j < header.length; j++) obj[header[j]] = vals[j] || '';
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function parseCSVRow(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i+1] === '"') { current += '"'; i++; }
+      else { inQuotes = !inQuotes; }
+    } else if (ch === ',' && !inQuotes) { result.push(current); current = ''; }
+    else { current += ch; }
+  }
+  result.push(current);
+  return result;
+}
+
+function addYears(dateStr, years) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCFullYear(d.getUTCFullYear() + years);
+  return d.toISOString().slice(0, 10);
+}
+
+function subtractYears(dateStr, years) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCFullYear(d.getUTCFullYear() - years);
+  return d.toISOString().slice(0, 10);
+}
+
+function extractDate(str) {
+  if (!str) return null;
+  const m = str.match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : null;
+}
+
+function detectCSVType(rows) {
+  if (!rows || rows.length === 0) return 'unknown';
+  const keys = Object.keys(rows[0]);
+  if (keys.includes('courseTitle') || keys.includes('closedDateTimeUtc')) return 'course_learning';
+  if (keys.includes('Topic') && keys.includes('NOBA Cert. Date')) return 'pit_safety';
+  if (keys.includes('Topic') && keys.includes('Expiry Date') && keys.some(k => k.includes('Side Audit'))) return 'yard_safety';
+  if (keys.includes('Employee ID') && keys.includes('Badge Barcode ID')) return 'roster';
+  if (keys.includes('Employee ID') && keys.includes('Punch Type')) return 'roster';
+  if (keys.includes('Employee ID') && keys.includes('Employee Name') && keys.includes('Manager')) return 'roster';
+  if (keys.includes('Login') && keys.includes('Home') && (keys.includes('SBC') || keys.includes('Pick') || keys.includes('Pack'))) return 'matrix';
+  return 'unknown';
+}
+
+function processCourseCSV(rows, data, loginIndex) {
+  const latest = {};
+  for (const row of rows) {
+    if ((row.status || '').trim() !== 'completed') continue;
+    const login = (row.login || '').trim().toLowerCase();
+    const course = (row.courseTitle || '').trim();
+    const closed = (row.closedDateTimeUtc || '').trim();
+    if (!login || !course || !closed) continue;
+    const tid = CSV_COURSE_MAP[course];
+    if (tid === undefined) continue;
+    if (!latest[login]) latest[login] = {};
+    if (!latest[login][tid] || closed > latest[login][tid]) latest[login][tid] = closed;
+  }
+
+  let updates = 0;
+  for (const [login, tids] of Object.entries(latest)) {
+    if (CSV_PROTECTED_LOGINS.has(login)) continue;
+    if (CSV_EXCLUDED_LOGINS.has(login)) continue;
+    if (!(login in loginIndex)) continue;
+    const assoc = data[loginIndex[login]];
+    for (const [tidStr, closed] of Object.entries(tids)) {
+      const tid = parseInt(tidStr);
+      const completed = extractDate(closed);
+      if (!completed) continue;
+      const expiry = addYears(completed, 1);
+      const existing = assoc.records[tid];
+      if (!existing || expiry > existing.expiry) {
+        assoc.records[tid] = { completed, expiry, trainer: 'AVV2 Safety' };
+        updates++;
+      }
+    }
+  }
+  return updates;
+}
+
+function processPitCSV(rows, data, loginIndex) {
+  let updates = 0;
+  for (const row of rows) {
+    if ((row['Compliant Yes/No'] || '').trim() !== 'Yes') continue;
+    const topic = (row['Topic'] || '').trim();
+    const login = (row['Emp Login'] || '').trim().toLowerCase();
+    if (!login || !topic) continue;
+    const tid = CSV_PIT_MAP[topic];
+    if (tid === undefined) continue;
+    if (CSV_PROTECTED_LOGINS.has(login)) continue;
+    if (CSV_EXCLUDED_LOGINS.has(login)) continue;
+    if (!(login in loginIndex)) continue;
+
+    const expiry = extractDate(row['Theory Expiry Date'] || '');
+    if (!expiry) continue;
+
+    let completed;
+    if (CSV_ANNUAL_IDS.has(tid)) {
+      completed = subtractYears(expiry, 1);
+    } else if (CSV_THREE_YEAR_IDS.has(tid)) {
+      const noba = extractDate(row['NOBA Cert. Date'] || '');
+      completed = noba || subtractYears(expiry, 3);
+    } else continue;
+
+    const assoc = data[loginIndex[login]];
+    const existing = assoc.records[tid];
+    if (!existing || expiry > existing.expiry) {
+      assoc.records[tid] = { completed, expiry, trainer: 'AVV2 Safety' };
+      updates++;
+    }
+  }
+  return updates;
+}
+
+function processYardCSV(rows, data, loginIndex) {
+  let updates = 0;
+  for (const row of rows) {
+    if ((row['Compliant Yes/No'] || '').trim() !== 'Yes') continue;
+    const topic = (row['Topic'] || '').trim();
+    const login = (row['Emp Login'] || '').trim().toLowerCase();
+    if (!login || !topic) continue;
+    const tid = CSV_YARD_MAP[topic];
+    if (tid === undefined) continue;
+    if (CSV_PROTECTED_LOGINS.has(login)) continue;
+    if (CSV_EXCLUDED_LOGINS.has(login)) continue;
+    if (!(login in loginIndex)) continue;
+
+    let expiry;
+    if (tid === 9) expiry = extractDate(row['Expiry Date'] || '');
+    else if (tid === 8) expiry = extractDate(row['Theory Expiry Date'] || '');
+    if (!expiry) continue;
+
+    const completed = subtractYears(expiry, 1);
+    const assoc = data[loginIndex[login]];
+    const existing = assoc.records[tid];
+    if (!existing || expiry > existing.expiry) {
+      assoc.records[tid] = { completed, expiry, trainer: 'AVV2 Safety' };
+      updates++;
+    }
+  }
+  return updates;
+}
+
+function generateAssociatesJS(data) {
+  let lines = ['const ASSOCIATES_DATA = ['];
+  for (const a of data) {
+    const sorted = Object.keys(a.records).map(Number).sort((x,y) => x-y);
+    const recParts = sorted.map(tid => {
+      const r = a.records[tid];
+      return `${tid}: { completed: '${r.completed}', expiry: '${r.expiry}', trainer: '${r.trainer}' }`;
+    });
+    const name = a.full_name.replace(/'/g, "\\'");
+    const mgr = (a.manager_name || '').replace(/'/g, "\\'");
+    lines.push(`  { login: '${a.login}', full_name: '${name}', start_date: '${a.start_date}', employment_type: '${a.employment_type}', manager_name: '${mgr}', shift: '${a.shift}', records: { ${recParts.join(', ')} } },`);
+  }
+  lines.push('];');
+  return lines.join('\n') + '\n';
+}
+
+function cloneAssociatesData() {
+  return ASSOCIATES_DATA.map(a => ({
+    login: a.login,
+    full_name: a.full_name,
+    start_date: a.start_date,
+    employment_type: a.employment_type,
+    manager_name: a.manager_name,
+    shift: a.shift,
+    records: {...(a.records || {})}
+  }));
+}
+
+let updatePanelFiles = {};
+let updatePanelLog = [];
+
+function renderUpdatePanel() {
+  return `
+  <div class="min-h-screen bg-gray-900 text-white">
+    <nav class="bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="font-bold text-sm">📤 CSV Update Tool</span>
+      </div>
+      <button onclick="window.location.hash=''" class="text-gray-400 hover:text-white text-sm px-3 py-1 border border-gray-600 rounded-lg hover:bg-gray-700">← Back to Dashboard</button>
+    </nav>
+    <div class="max-w-3xl mx-auto px-4 py-8">
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold mb-2">Update Training Data</h1>
+        <p class="text-gray-400 text-sm">Drop your CSV exports below. The site will update automatically for everyone.</p>
+      </div>
+
+      <!-- GitHub Token -->
+      <div class="mb-6 max-w-md mx-auto">
+        <div class="flex items-center gap-2">
+          <input id="github-token-input" type="password" placeholder="GitHub token (ghp_...)" value="${getGitHubToken() || ''}"
+            class="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500">
+          <button onclick="setGitHubToken(document.getElementById('github-token-input').value); this.textContent='Saved ✓'; setTimeout(()=>this.textContent='Save',1500)" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg">Save</button>
+        </div>
+        <p class="text-xs text-gray-500 mt-1 text-center">${getGitHubToken() ? '🟢 Token set — updates will push to GitHub automatically' : '⚪ Set token to enable auto-push for everyone'}</p>
+      </div>
+
+      <!-- Drop Zones -->
+      <div class="grid gap-4 mb-6">
+        <div id="drop-course" class="drop-zone border-2 border-dashed border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-indigo-500 hover:bg-gray-800/50 transition-all" ondragover="event.preventDefault(); this.classList.add('border-indigo-400','bg-indigo-900/20')" ondragleave="this.classList.remove('border-indigo-400','bg-indigo-900/20')" ondrop="handleDrop(event, 'course')" onclick="document.getElementById('file-course').click()">
+          <input type="file" id="file-course" accept=".csv" class="hidden" onchange="handleFileSelect(event, 'course')">
+          <div id="drop-course-content">
+            <div class="text-3xl mb-2">📋</div>
+            <p class="font-medium text-gray-300">Course Learning Report</p>
+            <p class="text-xs text-gray-500 mt-1">Training IDs 2, 3, 4, 6, 7 (Auto Slam, Destuff-IT, Jam Clear, Vacuum Lift, VRC)</p>
+          </div>
+        </div>
+        <div id="drop-pit" class="drop-zone border-2 border-dashed border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-amber-500 hover:bg-gray-800/50 transition-all" ondragover="event.preventDefault(); this.classList.add('border-amber-400','bg-amber-900/20')" ondragleave="this.classList.remove('border-amber-400','bg-amber-900/20')" ondrop="handleDrop(event, 'pit')" onclick="document.getElementById('file-pit').click()">
+          <input type="file" id="file-pit" accept=".csv" class="hidden" onchange="handleFileSelect(event, 'pit')">
+          <div id="drop-pit-content">
+            <div class="text-3xl mb-2">🚜</div>
+            <p class="font-medium text-gray-300">PIT Safety Compliance</p>
+            <p class="text-xs text-gray-500 mt-1">Training IDs 10–19 (PIT 101, Fall Protection, EPJ, Tugger, etc.)</p>
+          </div>
+        </div>
+        <div id="drop-yard" class="drop-zone border-2 border-dashed border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-green-500 hover:bg-gray-800/50 transition-all" ondragover="event.preventDefault(); this.classList.add('border-green-400','bg-green-900/20')" ondragleave="this.classList.remove('border-green-400','bg-green-900/20')" ondrop="handleDrop(event, 'yard')" onclick="document.getElementById('file-yard').click()">
+          <input type="file" id="file-yard" accept=".csv" class="hidden" onchange="handleFileSelect(event, 'yard')">
+          <div id="drop-yard-content">
+            <div class="text-3xl mb-2">🚛</div>
+            <p class="font-medium text-gray-300">Yard Safety Compliance</p>
+            <p class="text-xs text-gray-500 mt-1">Training IDs 8–9 (TDR/GTDR, Yard Access)</p>
+          </div>
+        </div>
+        <div id="drop-roster" class="drop-zone border-2 border-dashed border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-cyan-500 hover:bg-gray-800/50 transition-all" ondragover="event.preventDefault(); this.classList.add('border-cyan-400','bg-cyan-900/20')" ondragleave="this.classList.remove('border-cyan-400','bg-cyan-900/20')" ondrop="handleDrop(event, 'roster')" onclick="document.getElementById('file-roster').click()">
+          <input type="file" id="file-roster" accept=".csv" class="hidden" onchange="handleFileSelect(event, 'roster')">
+          <div id="drop-roster-content">
+            <div class="text-3xl mb-2">👥</div>
+            <p class="font-medium text-gray-300">Employee Roster</p>
+            <p class="text-xs text-gray-500 mt-1">Updates who is onsite (Attendance / FCLM roster export)</p>
+          </div>
+        </div>
+        <div id="drop-matrix" class="drop-zone border-2 border-dashed border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-purple-500 hover:bg-gray-800/50 transition-all" ondragover="event.preventDefault(); this.classList.add('border-purple-400','bg-purple-900/20')" ondragleave="this.classList.remove('border-purple-400','bg-purple-900/20')" ondrop="handleDrop(event, 'matrix')" onclick="document.getElementById('file-matrix').click()">
+          <input type="file" id="file-matrix" accept=".csv" class="hidden" onchange="handleFileSelect(event, 'matrix')">
+          <div id="drop-matrix-content">
+            <div class="text-3xl mb-2">📊</div>
+            <p class="font-medium text-gray-300">Training Matrix</p>
+            <p class="text-xs text-gray-500 mt-1">Updates process training (Pick, Pack, Stow, Ship, etc.)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Process Button -->
+      <div class="text-center mb-6">
+        <button onclick="runUpdate()" id="btn-process" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all" disabled>
+          ⚡ Process & Generate File
+        </button>
+      </div>
+
+      <!-- Log Output -->
+      <div id="update-log" class="hidden bg-gray-800 border border-gray-700 rounded-xl p-4 mb-6 font-mono text-xs max-h-64 overflow-y-auto">
+      </div>
+
+      <!-- Download Button -->
+      <div id="download-section" class="hidden text-center space-y-3">
+        <a id="download-link" class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl shadow-lg transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Download associates-data.js
+        </a>
+        <p class="text-gray-500 text-xs mt-3">Replace the file(s) in your repo and push to update the live site.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function initUpdatePanel() {
+  updatePanelFiles = {};
+  updatePanelLog = [];
+  // Pre-set token if not already saved
+  if (!getGitHubToken()) {
+    setGitHubToken('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');
+  }
+}
+
+function handleDrop(event, type) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('border-indigo-400','bg-indigo-900/20','border-amber-400','bg-amber-900/20','border-green-400','bg-green-900/20');
+  const file = event.dataTransfer.files[0];
+  if (file) loadCSVFile(file, type);
+}
+
+function handleFileSelect(event, type) {
+  const file = event.target.files[0];
+  if (file) loadCSVFile(file, type);
+}
+
+function loadCSVFile(file, type) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let text = e.target.result;
+    // Remove BOM
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    const rows = parseCSVText(text);
+
+    // Auto-detect type if needed
+    const detected = detectCSVType(rows);
+    let actualType = type;
+    if (detected !== 'unknown' && detected !== type) {
+      // Auto-correct the type
+      actualType = detected;
+    }
+
+    updatePanelFiles[actualType] = { name: file.name, rows: rows };
+
+    // Update UI
+    const zoneMap = { course_learning: 'drop-course', pit_safety: 'drop-pit', yard_safety: 'drop-yard', roster: 'drop-roster', matrix: 'drop-matrix' };
+    const zoneId = zoneMap[actualType] || 'drop-course';
+    const contentId = zoneId + '-content';
+    const zone = document.getElementById(zoneId);
+    const content = document.getElementById(contentId);
+    if (zone && content) {
+      zone.classList.remove('border-dashed', 'border-gray-600');
+      zone.classList.add('border-solid', 'border-green-500', 'bg-green-900/10');
+      content.innerHTML = `<div class="text-2xl mb-1">✅</div><p class="font-medium text-green-400">${file.name}</p><p class="text-xs text-gray-400">${rows.length} rows loaded</p>`;
+    }
+
+    // Enable process button if at least one file loaded
+    const btn = document.getElementById('btn-process');
+    if (btn) btn.disabled = Object.keys(updatePanelFiles).length === 0;
+  };
+  reader.readAsText(file);
+}
+
+function processRosterCSV(rows) {
+  // Roster/Attendance CSV may have different formats:
+  // - "User ID" / "login" column (direct login)
+  // - "Employee ID" + "Employee Name" (attendance format, name as "Last,First")
+  // We build a name-to-login lookup from ASSOCIATES to match attendance format
+  const nameLookup = {};
+  for (const a of ASSOCIATES) {
+    // Store by lowercase full_name
+    nameLookup[a.full_name.toLowerCase()] = a.login;
+    // Also store reversed "Last,First" -> login
+    const parts = a.full_name.split(' ');
+    if (parts.length >= 2) {
+      const reversed = parts.slice(-1)[0] + ',' + parts.slice(0, -1).join(' ');
+      nameLookup[reversed.toLowerCase()] = a.login;
+    }
+  }
+
+  const onsiteLogins = new Set();
+  for (const row of rows) {
+    // Try direct login field first
+    const login = (row['User ID'] || row['login'] || row['Login'] || row['Emp Login'] || '').trim().toLowerCase();
+    if (login) {
+      onsiteLogins.add(login);
+      continue;
+    }
+    // Try matching by Employee Name (format: "Last,First")
+    const name = (row['Employee Name'] || row['Full Name'] || '').trim().toLowerCase();
+    if (name && nameLookup[name]) {
+      onsiteLogins.add(nameLookup[name]);
+    }
+  }
+  return onsiteLogins;
+}
+
+const MATRIX_PROCESSES = ['SBC', 'CC', 'SRC', 'RSR', 'Dock', 'Receive', 'Stow', 'IB PS', 'Pick', 'Pack', 'Sort', 'Ship', 'OB PS', 'VRET Pack', 'VRC', 'KPP', 'Manual Slam', 'Auto Slam', 'Gift Wrap', 'Prep', 'Cubiscan', 'Waterspider'];
+
+function processMatrixCSV(rows, onsiteLogins) {
+  // Training Matrix CSV: Login, Employee Name, Manager, Type, Home, then process columns
+  // Values are 'Pass' or empty
+  // Note: If exported from Excel with merged header rows, first rows might not have 'Login'
+  // Try to find the correct header row
+  const result = {};
+  let count = 0;
+
+  // Check if the rows already have proper column headers
+  const hasLoginKey = rows.length > 0 && ('Login' in rows[0] || 'login' in rows[0]);
+
+  if (hasLoginKey) {
+    // Standard CSV with proper headers
+    for (const row of rows) {
+      const login = (row['Login'] || row['login'] || '').trim().toLowerCase();
+      if (!login || login === 'login') continue;
+      const trained = [];
+      for (const proc of MATRIX_PROCESSES) {
+        const val = (row[proc] || '').trim().toLowerCase();
+        if (val === 'pass') trained.push(proc);
+      }
+      const onsite = onsiteLogins ? onsiteLogins.has(login) : false;
+      result[login] = { processes: trained, onsite: onsite };
+      count++;
+    }
+  } else {
+    // Might have extra header rows — look for a row that starts with something loginish
+    // Try parsing by position: col 0=Login, 1=Name, 2=Manager, 3=Type, 4=Home, 5+=processes
+    for (const row of rows) {
+      const keys = Object.keys(row);
+      const firstVal = (row[keys[0]] || '').trim().toLowerCase();
+      // Skip header-like rows
+      if (!firstVal || firstVal === 'login' || firstVal === 'associate information' || firstVal.includes('training matrix')) continue;
+      // Check if it looks like a login (alphanumeric, no spaces)
+      if (/^[a-z0-9]+$/.test(firstVal)) {
+        const login = firstVal;
+        const trained = [];
+        // Process columns start at index 5
+        for (let i = 0; i < MATRIX_PROCESSES.length; i++) {
+          const val = (row[keys[5 + i]] || '').trim().toLowerCase();
+          if (val === 'pass') trained.push(MATRIX_PROCESSES[i]);
+        }
+        const onsite = onsiteLogins ? onsiteLogins.has(login) : false;
+        result[login] = { processes: trained, onsite: onsite };
+        count++;
+      }
+    }
+  }
+  return { data: result, count: count };
+}
+
+function generateProcessTrainingJS(data) {
+  let lines = ['const PROCESS_TRAINING_DATA = {'];
+  for (const [login, info] of Object.entries(data)) {
+    const procs = info.processes.map(p => "'" + p + "'").join(', ');
+    lines.push("  '" + login + "': { processes: [" + procs + "], onsite: " + (info.onsite ? 'true' : 'false') + " },");
+  }
+  lines.push('};');
+  return lines.join('\n') + '\n';
+}
+
+function runUpdate() {
+  const logEl = document.getElementById('update-log');
+  logEl.classList.remove('hidden');
+  logEl.innerHTML = '';
+  const log = (msg, color) => {
+    logEl.innerHTML += `<div class="${color || 'text-gray-300'}">${msg}</div>`;
+    logEl.scrollTop = logEl.scrollHeight;
+  };
+
+  log('Starting update...', 'text-indigo-400');
+  log(`Loaded files: ${Object.keys(updatePanelFiles).join(', ')}`, 'text-gray-400');
+
+  // Clone current data
+  const data = cloneAssociatesData();
+  const loginIndex = {};
+  data.forEach((a, i) => { loginIndex[a.login] = i; });
+  log(`Current associates: ${data.length}`, 'text-gray-400');
+
+  let totalUpdates = 0;
+  let hasAssociatesUpdate = false;
+  let hasProcessUpdate = false;
+
+  // Process Course Learning
+  if (updatePanelFiles.course_learning) {
+    const n = processCourseCSV(updatePanelFiles.course_learning.rows, data, loginIndex);
+    log(`✓ Course Learning Report: ${n} updates`, 'text-green-400');
+    totalUpdates += n;
+    hasAssociatesUpdate = true;
+  }
+
+  // Process PIT Safety
+  if (updatePanelFiles.pit_safety) {
+    const n = processPitCSV(updatePanelFiles.pit_safety.rows, data, loginIndex);
+    log(`✓ PIT Safety: ${n} updates`, 'text-amber-400');
+    totalUpdates += n;
+    hasAssociatesUpdate = true;
+  }
+
+  // Process Yard Safety
+  if (updatePanelFiles.yard_safety) {
+    const n = processYardCSV(updatePanelFiles.yard_safety.rows, data, loginIndex);
+    log(`✓ Yard Safety: ${n} updates`, 'text-green-400');
+    totalUpdates += n;
+    hasAssociatesUpdate = true;
+  }
+
+  // Process Roster + Matrix
+  let onsiteLogins = null;
+  if (updatePanelFiles.roster) {
+    onsiteLogins = processRosterCSV(updatePanelFiles.roster.rows);
+    log(`✓ Employee Roster: ${onsiteLogins.size} associates onsite`, 'text-cyan-400');
+  }
+
+  if (updatePanelFiles.matrix) {
+    const matrixResult = processMatrixCSV(updatePanelFiles.matrix.rows, onsiteLogins);
+    log(`✓ Training Matrix: ${matrixResult.count} associates processed`, 'text-purple-400');
+    hasProcessUpdate = true;
+
+    // Generate process-training-data.js
+    const processOutput = generateProcessTrainingJS(matrixResult.data);
+    const processBlob = new Blob([processOutput], { type: 'text/javascript' });
+    const processUrl = URL.createObjectURL(processBlob);
+
+    // Show process training download
+    const section = document.getElementById('download-section');
+    section.classList.remove('hidden');
+    let processLink = document.getElementById('download-process-link');
+    if (!processLink) {
+      const container = document.getElementById('download-section');
+      container.insertAdjacentHTML('beforeend', `
+        <a id="download-process-link" class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all mt-3">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Download process-training-data.js
+        </a>
+      `);
+      processLink = document.getElementById('download-process-link');
+    }
+    processLink.href = processUrl;
+    processLink.download = 'process-training-data.js';
+  } else if (updatePanelFiles.roster && !updatePanelFiles.matrix) {
+    // Roster only — update onsite status in existing process training data
+    if (typeof PROCESS_TRAINING_DATA !== 'undefined') {
+      const updated = {};
+      for (const [login, info] of Object.entries(PROCESS_TRAINING_DATA)) {
+        updated[login] = { processes: [...info.processes], onsite: onsiteLogins.has(login) };
+      }
+      const processOutput = generateProcessTrainingJS(updated);
+      const processBlob = new Blob([processOutput], { type: 'text/javascript' });
+      const processUrl = URL.createObjectURL(processBlob);
+      hasProcessUpdate = true;
+
+      const section = document.getElementById('download-section');
+      section.classList.remove('hidden');
+      let processLink = document.getElementById('download-process-link');
+      if (!processLink) {
+        const container = document.getElementById('download-section');
+        container.insertAdjacentHTML('beforeend', `
+          <a id="download-process-link" class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all mt-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Download process-training-data.js
+          </a>
+        `);
+        processLink = document.getElementById('download-process-link');
+      }
+      processLink.href = processUrl;
+      processLink.download = 'process-training-data.js';
+      log(`✓ Onsite status updated for ${onsiteLogins.size} logins`, 'text-cyan-400');
+    }
+  }
+
+  if (hasAssociatesUpdate) {
+    log(`\nCert updates total: ${totalUpdates}`, 'text-white font-bold');
+  }
+  log('Protected logins preserved: ' + [...CSV_PROTECTED_LOGINS].join(', '), 'text-gray-500');
+
+  // Generate associates-data.js if cert CSVs were provided
+  if (hasAssociatesUpdate) {
+    const output = generateAssociatesJS(data);
+    const blob = new Blob([output], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+
+    const section = document.getElementById('download-section');
+    const link = document.getElementById('download-link');
+    section.classList.remove('hidden');
+    link.href = url;
+    link.download = 'associates-data.js';
+  } else {
+    // Hide the associates download if no cert CSVs
+    const link = document.getElementById('download-link');
+    if (link) link.style.display = hasAssociatesUpdate ? '' : 'none';
+  }
+
+  log('\n✅ Done! Download your files below.', 'text-green-300 font-bold');
+
+  // ── Live session update ──────────────────────────────────────────────────
+  // Apply changes to the in-memory data so the dashboard reflects them immediately
+  if (hasAssociatesUpdate) {
+    // Update ASSOCIATES array in place
+    for (let i = 0; i < data.length; i++) {
+      const assoc = ASSOCIATES.find(a => a.login === data[i].login);
+      if (assoc) {
+        assoc.records = data[i].records;
+      }
+    }
+    // Save to localStorage for persistence across refreshes
+    try {
+      localStorage.setItem('badgeTracker_associatesData', JSON.stringify(data));
+      localStorage.setItem('badgeTracker_lastUpdate', new Date().toISOString());
+    } catch(e) { log('⚠ Could not save to localStorage (storage full?)', 'text-amber-400'); }
+    log('⚡ Training data saved — persists across refreshes', 'text-indigo-300');
+  }
+
+  if (updatePanelFiles.matrix) {
+    // Update PROCESS_TRAINING_DATA in place
+    const matrixResult2 = processMatrixCSV(updatePanelFiles.matrix.rows, onsiteLogins);
+    for (const [login, info] of Object.entries(matrixResult2.data)) {
+      PROCESS_TRAINING_DATA[login] = info;
+    }
+    // Save to localStorage
+    try {
+      localStorage.setItem('badgeTracker_processData', JSON.stringify(matrixResult2.data));
+    } catch(e) { /* storage full */ }
+    log('⚡ Process training data saved — persists across refreshes', 'text-purple-300');
+  } else if (updatePanelFiles.roster && !updatePanelFiles.matrix) {
+    // Update onsite status in PROCESS_TRAINING_DATA
+    if (typeof PROCESS_TRAINING_DATA !== 'undefined') {
+      for (const login of Object.keys(PROCESS_TRAINING_DATA)) {
+        PROCESS_TRAINING_DATA[login].onsite = onsiteLogins.has(login);
+      }
+      // Save to localStorage
+      try {
+        localStorage.setItem('badgeTracker_processData', JSON.stringify(PROCESS_TRAINING_DATA));
+      } catch(e) { /* storage full */ }
+      log('⚡ Onsite status saved — persists across refreshes', 'text-cyan-300');
+    }
+  }
+
+  log('\n💡 Changes are live and will persist on this browser. Download files to update the repo for everyone.', 'text-gray-400');
+
+  // ── Auto-push to GitHub ──────────────────────────────────────────────────
+  const token = getGitHubToken();
+  if (token) {
+    log('\n🚀 Pushing to GitHub...', 'text-indigo-400');
+    pushToGitHub(token, hasAssociatesUpdate ? generateAssociatesJS(data) : null, hasProcessUpdate || updatePanelFiles.roster ? (updatePanelFiles.matrix ? generateProcessTrainingJS(processMatrixCSV(updatePanelFiles.matrix.rows, onsiteLogins).data) : (updatePanelFiles.roster && typeof PROCESS_TRAINING_DATA !== 'undefined' ? generateProcessTrainingJS(PROCESS_TRAINING_DATA) : null)) : null, log);
+  } else {
+    log('\n⚠ No GitHub token set — changes saved locally only. Set token to auto-push for everyone.', 'text-amber-400');
+  }
+}
+
+// ── GitHub Auto-Push ───────────────────────────────────────────────────────────
+
+const GITHUB_REPO = 'nellyvw/badge-tracker';
+const GITHUB_BRANCH = 'main';
+
+function getGitHubToken() {
+  return localStorage.getItem('badgeTracker_githubToken') || null;
+}
+
+function setGitHubToken(token) {
+  localStorage.setItem('badgeTracker_githubToken', token);
+}
+
+async function getFileSHA(token, path) {
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`, {
+      headers: { 'Authorization': `token ${token}` }
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      return data.sha;
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function pushFile(token, path, content, message) {
+  const sha = await getFileSHA(token, path);
+  const body = {
+    message: message,
+    content: btoa(unescape(encodeURIComponent(content))),
+    branch: GITHUB_BRANCH
+  };
+  if (sha) body.sha = sha;
+
+  const resp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  return resp.ok;
+}
+
+async function pushToGitHub(token, associatesContent, processContent, log) {
+  let success = true;
+  const now = new Date().toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'});
+
+  if (associatesContent) {
+    const ok = await pushFile(token, 'associates-data.js', associatesContent, `Update training data - ${now}`);
+    if (ok) {
+      log('✅ associates-data.js pushed to GitHub', 'text-green-400');
+    } else {
+      log('❌ Failed to push associates-data.js — check token permissions', 'text-red-400');
+      success = false;
+    }
+  }
+
+  if (processContent) {
+    const ok = await pushFile(token, 'process-training-data.js', processContent, `Update process training data - ${now}`);
+    if (ok) {
+      log('✅ process-training-data.js pushed to GitHub', 'text-green-400');
+    } else {
+      log('❌ Failed to push process-training-data.js — check token permissions', 'text-red-400');
+      success = false;
+    }
+  }
+
+  if (success && (associatesContent || processContent)) {
+    log('\n🎉 Site updated for everyone! Changes are now live.', 'text-green-300 font-bold');
+
+    // ── Update upload history ──────────────────────────────────────────────
+    try {
+      // Determine what was uploaded
+      const uploadedTypes = [];
+      if (updatePanelFiles.course_learning) uploadedTypes.push('Course Learning Report');
+      if (updatePanelFiles.pit_safety) uploadedTypes.push('PIT Safety Compliance');
+      if (updatePanelFiles.yard_safety) uploadedTypes.push('Yard Safety Compliance');
+      if (updatePanelFiles.roster) uploadedTypes.push('Employee Roster');
+      if (updatePanelFiles.matrix) uploadedTypes.push('Training Matrix');
+
+      // Get manager name from session (use login from PIN auth)
+      const managerName = localStorage.getItem('badgeTracker_managerName') || 'Unknown Manager';
+
+      // Create new history entry
+      const historyEntry = {
+        date: new Date().toISOString(),
+        displayDate: now,
+        uploadedBy: managerName,
+        types: uploadedTypes
+      };
+
+      // Fetch existing history from GitHub
+      let history = [];
+      try {
+        const histResp = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/upload-history.json?ref=${GITHUB_BRANCH}`, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        if (histResp.ok) {
+          const histData = await histResp.json();
+          history = JSON.parse(decodeURIComponent(escape(atob(histData.content))));
+        }
+      } catch(e) { /* file doesn't exist yet, start fresh */ }
+
+      // Add new entry at the top (most recent first), keep last 50
+      history.unshift(historyEntry);
+      if (history.length > 50) history = history.slice(0, 50);
+
+      // Push updated history
+      const historyContent = JSON.stringify(history, null, 2);
+      const histOk = await pushFile(token, 'upload-history.json', historyContent, `Upload history - ${now}`);
+      if (histOk) {
+        log('📋 Upload history updated', 'text-gray-400');
+      }
+    } catch(e) {
+      log('⚠ Could not update upload history: ' + e.message, 'text-amber-400');
+    }
+  }
+}
+
+// ── Upload History ─────────────────────────────────────────────────────────────
+let _uploadHistory = null;
+
+async function fetchUploadHistory() {
+  try {
+    const resp = await fetch(`upload-history.json?v=${Date.now()}`);
+    if (resp.ok) {
+      _uploadHistory = await resp.json();
+      // Update the "Last updated" badge with the most recent entry
+      if (_uploadHistory.length > 0) {
+        const latest = _uploadHistory[0];
+        const badge = document.getElementById('last-updated-badge');
+        if (badge) {
+          badge.textContent = 'Updated: ' + latest.displayDate + ' by ' + latest.uploadedBy;
+        }
+      }
+    }
+  } catch(e) { /* file doesn't exist yet */ }
+}
+
+function showUploadHistory() {
+  if (!_uploadHistory || _uploadHistory.length === 0) {
+    alert('No upload history available yet.');
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+  const rows = _uploadHistory.slice(0, 20).map(entry => {
+    const types = entry.types.join(', ');
+    return `<tr class="border-b border-gray-100">
+      <td class="px-3 py-2 text-sm font-medium text-gray-900">${entry.displayDate}</td>
+      <td class="px-3 py-2 text-sm text-gray-600">${entry.uploadedBy}</td>
+      <td class="px-3 py-2 text-sm text-gray-500">${types}</td>
+    </tr>`;
+  }).join('');
+
+  modal.innerHTML = `
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden">
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-gray-900">📋 Upload History</h3>
+        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      </div>
+      <div class="overflow-y-auto max-h-[60vh]">
+        <table class="w-full">
+          <thead class="bg-gray-50 sticky top-0">
+            <tr>
+              <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
+              <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Uploaded By</th>
+              <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase">Type</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="p-3 border-t border-gray-200 text-center">
+        <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function handleRoute() {
+  const hash = window.location.hash.slice(1); // remove #
+  const app = document.getElementById('app');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (hash === 'update') {
+    // CSV Update tool — requires manager login
+    if (!isManagerLoggedIn()) {
+      showLoginScreen();
+    } else {
+      app.innerHTML = renderUpdatePanel();
+      initUpdatePanel();
+    }
+  } else if (hash.startsWith('badge/')) {
+    // Badge pages are public — no auth needed
+    const login = hash.replace('badge/', '');
+    showBadgeByLogin(login);
+  } else {
+    // Admin page requires manager PIN
+    if (!isManagerLoggedIn()) {
+      showLoginScreen();
+    } else {
+      app.innerHTML = renderAdminView();
+      document.getElementById('search-input').value = filterText;
+      renderTable();
+    }
+  }
+}
+
+// Esc key to go back from profile to main table
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && window.location.hash.startsWith('#badge/')) {
+    window.location.hash = '';
+  }
+});
+
+window.addEventListener('DOMContentLoaded', function() { handleRoute(); fetchUploadHistory(); });
 window.addEventListener('hashchange', handleRoute);
 </script>
 
 <div id="app"></div>
-</body>
-</html>
+
+
+<div style="display: none; background-color: rgb(136, 136, 136); margin-top: -50px; overflow: hidden; bottom: 0px; right: 0px; left: 0px; z-index: 50000; width: 100%; height: 22px; color: rgb(255, 255, 255); vertical-align: middle; position: fixed;" id="quicksum-panel"><select style="margin: 0px 0px 0px 10px; padding: 0px; float: left; height: 22px; font-size: 14px; color: rgb(0, 0, 0); background-image: none; background-color: rgb(255, 255, 255); font-style: normal; font-family: sans-serif;" id="quicksum-locale-select"><option value="en-US" selected="selected">en-US</option><option value="de-DE">de-DE</option></select><select style="margin: 0px 0px 0px 10px; padding: 0px; float: left; height: 22px; font-size: 14px; color: rgb(0, 0, 0); background-image: none; background-color: rgb(255, 255, 255); font-style: normal; font-family: sans-serif;" id="quicksum-select"><option value="sum" selected="selected">Sum</option><option value="average">Average</option><option value="min">Minimum</option><option value="max">Maximum</option><option value="quantity">Quantity</option></select><div style="margin-left: 10px; height: 22px; padding-top: 0px; float: left;" id="quicksum-display"></div><div style="font-weight: bold; margin-left: 10px; height: 22px; padding-top: 2px; float: right; font-size: 14px; color: rgb(255, 255, 255); font-style: normal; font-family: sans-serif;" id="quicksum-copyright">Script created by <a href="https://phonetool.amazon.com/users/kmink" target="_blank" style="color:#ff9103">kmink@</a> (v0.0.7)(<a href="http://dev-dsk-kmink-1b-32fda88c.eu-west-1.amazon.com/" target="_blank" style="color:#ff9103">my other projects</a>).</div></div></body></html>
