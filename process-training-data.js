@@ -111,7 +111,7 @@ const PROCESS_TRAINING_DATA = {
   'kdanpapa': { processes: ['Receive', 'Stow', 'IB PS', 'Pick', 'Prep', 'Cubiscan'], pitProcesses: [], onsite: false },
   'dansmilz': { processes: ['Pick', 'Pack', 'VRC'], pitProcesses: [], onsite: false },
   'grimwd': { processes: ['Pick', 'Ship', 'VRET Pack', 'VRC'], pitProcesses: [], onsite: false },
-  'nellyvw': { processes: ['Receive', 'Stow', 'Pick', 'Pack', 'Sort', 'OB PS', 'VRC', 'KPP', 'Auto Slam', 'Gift Wrap'], pitProcesses: [], onsite: true },
+  'nellyvw': { processes: ['Receive', 'Stow', 'Pick', 'Pack', 'Sort', 'OB PS', 'VRC', 'KPP', 'Auto Slam', 'Gift Wrap', 'Ship', 'Dock', 'Manual Slam'], pitProcesses: [], onsite: true },
   'thdeepth': { processes: ['Receive', 'Stow', 'IB PS', 'Prep', 'Cubiscan'], pitProcesses: [], onsite: false },
   'denpdeng': { processes: ['Pack', 'Waterspider'], pitProcesses: [], onsite: false },
   'djoaolay': { processes: ['SBC', 'Receive', 'Stow', 'IB PS', 'Ship', 'VRC', 'Prep', 'Cubiscan'], pitProcesses: [], onsite: true },
